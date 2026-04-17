@@ -123,20 +123,38 @@ export function SubjectDetail() {
            studentSection = student?.section || '';
         }
 
-        const courseTasks = (tasksData.data || []).filter((t: Task) => 
-          t.course_code?.toLowerCase() === code?.toLowerCase() && 
-          (user?.role === 'student' ? t.section === studentSection : true)
-        ).map(t => {
+        let currentFacultyId = '';
+        if (user?.role === 'faculty') {
+           const faculty = (facData.data || []).find((f: Faculty) => f.email === user.email);
+           currentFacultyId = faculty?.id?.toString() || '';
+        }
+
+        const courseTasks = (tasksData.data || []).filter((t: Task) => {
+          if (t.course_code?.toLowerCase() !== code?.toLowerCase()) return false;
+          if (user?.role === 'student') return t.section === studentSection || t.section === 'All';
+          if (user?.role === 'faculty') {
+            const urlSection = searchParams.get('section');
+            if (urlSection) return (t.section === urlSection || t.section === 'All') && t.faculty_id?.toString() === currentFacultyId;
+            return t.faculty_id?.toString() === currentFacultyId;
+          }
+          return true;
+        }).map(t => {
           const faculty = (facData.data || []).find((f: any) => f.id.toString() === t.faculty_id.toString());
           return { ...t, faculty };
         });
         setTasks(courseTasks);
         setAnnouncements(annData.data || []); 
 
-        const courseSchedules = (schData.data || []).filter((s: Schedule) => 
-           s.courseCode.toLowerCase() === code?.toLowerCase() &&
-           (user?.role === 'student' ? s.section === studentSection : true)
-        ).map(s => {
+        const courseSchedules = (schData.data || []).filter((s: Schedule) => {
+           if (s.courseCode.toLowerCase() !== code?.toLowerCase()) return false;
+           if (user?.role === 'student') return s.section === studentSection || s.section === 'All';
+           if (user?.role === 'faculty') {
+             const urlSection = searchParams.get('section');
+             if (urlSection) return s.section === urlSection && s.facultyId?.toString() === currentFacultyId;
+             return s.facultyId?.toString() === currentFacultyId;
+           }
+           return true;
+        }).map(s => {
            const fac = (facData.data || []).find((f: Faculty) => f.id.toString() === s.facultyId.toString());
            return { ...s, faculty: fac };
         });
