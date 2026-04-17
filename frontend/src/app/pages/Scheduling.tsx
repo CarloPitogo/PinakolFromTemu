@@ -26,9 +26,10 @@ import {
 } from "../components/ui/dialog";
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const START_HOUR = 7; 
+const START_HOUR = 6; 
 const END_HOUR = 21; 
-const ROW_HEIGHT = 45; 
+const ROW_HEIGHT = 40; 
+const TOTAL_ROWS = (END_HOUR - START_HOUR) * 2;
 
 export function Scheduling() {
   const { user } = useAuth();
@@ -129,8 +130,8 @@ export function Scheduling() {
   const calculatePosition = (startTime: string, endTime: string) => {
     const start = parseTime(startTime);
     const end = parseTime(endTime);
-    const top = (start - START_HOUR) * ROW_HEIGHT;
-    const height = (end - start) * ROW_HEIGHT;
+    const top = ((start - START_HOUR) / 0.5) * ROW_HEIGHT;
+    const height = ((end - start) / 0.5) * ROW_HEIGHT;
     return { top, height };
   };
 
@@ -163,56 +164,62 @@ export function Scheduling() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <div className="w-full min-w-[800px] relative">
-                <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b bg-gray-50">
-                  <div className="p-2 border-r"></div>
+            <div className="overflow-x-auto p-4 bg-gray-200/50 rounded-b-[1.5rem]">
+              <div className="w-full min-w-[1000px] bg-white border border-gray-300 shadow-sm relative">
+                <div className="grid grid-cols-[120px_repeat(7,1fr)] border-b border-gray-200 bg-white">
+                  <div className="p-3 border-r border-gray-200 text-center text-[10px] font-black text-gray-800 uppercase tracking-widest flex items-center justify-center">TIME</div>
                   {DAYS.map(day => (
-                    <div key={day} className="p-2 text-center text-[10px] font-black text-gray-400 border-r last:border-r-0 uppercase tracking-widest">
-                      {day.substring(0, 3)}
+                    <div key={day} className="p-3 text-center text-[11px] font-bold text-gray-800 border-r border-gray-200 last:border-r-0 uppercase tracking-widest flex items-center justify-center">
+                      {day}
                     </div>
                   ))}
                 </div>
 
-                <div className="relative" style={{ height: (END_HOUR - START_HOUR) * ROW_HEIGHT }}>
-                  {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => (
-                    <div key={i} className="absolute w-full border-b flex" style={{ top: i * ROW_HEIGHT, height: ROW_HEIGHT }}>
-                      <div className="w-[80px] -mt-2 pr-2 text-right text-[10px] font-bold text-gray-300">
-                        {START_HOUR + i > 12 ? START_HOUR + i - 12 : START_HOUR + i} {START_HOUR + i >= 12 ? 'PM' : 'AM'}
+                <div className="relative" style={{ height: TOTAL_ROWS * ROW_HEIGHT }}>
+                  {Array.from({ length: TOTAL_ROWS }).map((_, i) => {
+                    const currentTotalMinutes = START_HOUR * 60 + i * 30;
+                    const nextTotalMinutes = currentTotalMinutes + 30;
+                    const formatTime = (totalMins: number) => {
+                        const h = Math.floor(totalMins / 60);
+                        const m = totalMins % 60;
+                        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2,'0')}`;
+                    };
+                    const timeLabel = `${formatTime(currentTotalMinutes)} - ${formatTime(nextTotalMinutes)}`;
+
+                    return (
+                      <div key={i} className="absolute w-full border-b border-gray-200 flex" style={{ top: i * ROW_HEIGHT, height: ROW_HEIGHT }}>
+                        <div className="w-[120px] border-r border-gray-200 flex items-center justify-center text-[11px] font-medium text-gray-700 bg-white">
+                          {timeLabel}
+                        </div>
+                        <div className="flex-1 grid grid-cols-7">
+                          {Array.from({ length: 7 }).map((_, j) => (
+                             <div key={j} className="border-r border-gray-200 last:border-r-0 h-full bg-white"></div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex-1 border-l grid grid-cols-7">
-                        {Array.from({ length: 7 }).map((_, j) => (
-                           <div key={j} className="border-r last:border-r-0 h-full bg-gray-50/5"></div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {filteredSchedules.map((sched, idx) => {
                     const dayOffset = DAYS.indexOf(sched.day);
                     if (dayOffset === -1) return null;
                     const { top, height } = calculatePosition(sched.timeStart, sched.timeEnd);
-                    const colWidth = `calc((100% - 80px) / 7)`;
+                    const colWidth = `calc((100% - 120px) / 7)`;
                     
                     return (
-                      <div key={idx} className="absolute p-0.5 overflow-hidden transition-all hover:z-20 group"
+                      <div key={idx} className="absolute border border-white transition-transform hover:scale-[1.01] hover:z-20 hover:shadow-xl cursor-default"
                         style={{ 
-                          top: top + 1, height: height - 2, 
-                          left: `calc(80px + (${dayOffset} * ${colWidth}))`, 
-                          width: `calc(${colWidth} - 2px)`,
-                          marginLeft: '1px'
+                          top: top, height: height, 
+                          left: `calc(120px + (${dayOffset} * ${colWidth}))`, 
+                          width: colWidth,
                         }}>
-                        <div className={`h-full w-full rounded-lg border shadow-sm p-2 flex flex-col justify-between ${
-                          sched.type === 'Laboratory' ? 'bg-purple-50/80 border-purple-200 text-purple-900' : 'bg-blue-50/80 border-blue-200 text-blue-900'
+                        <div className={`h-full w-full flex flex-col items-center justify-center p-2 text-center text-white ${
+                          sched.type === 'Laboratory' ? 'bg-[#1a237e]' : 'bg-[#b71c1c]'
                         }`}>
-                          <div>
-                            <p className="text-[7px] font-black uppercase opacity-60 mb-0.5">{sched.section}</p>
-                            <h4 className="font-black text-[9px] leading-tight truncate">{sched.courseCode}</h4>
-                          </div>
-                          <div className="flex items-center gap-1 text-[8px] font-bold mt-auto text-[#FF7F11]">
-                            <MapPin className="w-2.5 h-2.5" />
-                            <span className="truncate uppercase">{sched.room}</span>
-                          </div>
+                            <p className="font-bold text-[11px] leading-tight mb-1">{sched.courseCode}: {sched.section}</p>
+                            <p className="font-medium text-[10px] leading-snug">{sched.type}</p>
+                            <p className="font-medium text-[10px] leading-snug uppercase">{sched.room}</p>
+                            {/* For faculty view, we don't need to show their own name, but for admin view we would, scheduling combines both nicely. */}
                         </div>
                       </div>
                     );

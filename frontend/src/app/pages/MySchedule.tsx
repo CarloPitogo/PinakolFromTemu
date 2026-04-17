@@ -8,9 +8,10 @@ import { Clock, Calendar as CalendarIcon, AlertCircle, MapPin, User as UserIcon 
 import { toast } from 'sonner';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const START_HOUR = 7; // 7 AM
-const END_HOUR = 21; // 9 PM
-const ROW_HEIGHT = 45; // Reduced from 60px to 45px for better fit
+const START_HOUR = 6;  // 6:00 AM
+const END_HOUR = 21;   // 9:00 PM
+const ROW_HEIGHT = 40; // 30 mins interval
+const TOTAL_ROWS = (END_HOUR - START_HOUR) * 2;
 
 export function MySchedule() {
   const { user } = useAuth();
@@ -64,8 +65,9 @@ export function MySchedule() {
   const calculatePosition = (startTime: string, endTime: string) => {
     const start = parseTime(startTime);
     const end = parseTime(endTime);
-    const top = (start - START_HOUR) * ROW_HEIGHT;
-    const height = (end - start) * ROW_HEIGHT;
+    // Since each ROW_HEIGHT represents 0.5 hours (30 mins)
+    const top = ((start - START_HOUR) / 0.5) * ROW_HEIGHT;
+    const height = ((end - start) / 0.5) * ROW_HEIGHT;
     return { top, height };
   };
 
@@ -142,33 +144,39 @@ export function MySchedule() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 bg-white">
-          <div className="overflow-x-auto">
-            <div className="w-full min-w-[700px] relative">
+          <div className="overflow-x-auto p-4 bg-gray-200/50 rounded-b-2xl">
+            <div className="w-full min-w-[1000px] bg-white border border-gray-300 shadow-sm">
               {/* Header: Days */}
-              <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b bg-gray-50">
-                <div className="p-2 border-r"></div>
+              <div className="grid grid-cols-[120px_repeat(7,1fr)] border-b border-gray-200">
+                <div className="p-3 border-r border-gray-200 text-center text-[10px] font-black text-gray-800 uppercase tracking-widest flex items-center justify-center">TIME</div>
                 {DAYS.map(day => (
-                  <div key={day} className="p-2 text-center text-xs font-bold text-gray-700 border-r last:border-r-0">
-                    {day.substring(0, 3)}
+                  <div key={day} className="p-3 text-center text-xs font-bold text-gray-800 uppercase border-r border-gray-200 last:border-r-0 flex items-center justify-center">
+                    {day}
                   </div>
                 ))}
               </div>
 
               {/* Grid Body */}
-              <div className="relative" style={{ height: (END_HOUR - START_HOUR) * ROW_HEIGHT }}>
+              <div className="relative" style={{ height: TOTAL_ROWS * ROW_HEIGHT }}>
                 {/* Time Labels & Horizontal Lines */}
-                {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => {
-                  const hour = START_HOUR + i;
-                  const displayHour = hour > 12 ? hour - 12 : hour;
-                  const ampm = hour >= 12 ? 'PM' : 'AM';
+                {Array.from({ length: TOTAL_ROWS }).map((_, i) => {
+                  const currentTotalMinutes = START_HOUR * 60 + i * 30;
+                  const nextTotalMinutes = currentTotalMinutes + 30;
+                  const formatTime = (totalMins: number) => {
+                      const h = Math.floor(totalMins / 60);
+                      const m = totalMins % 60;
+                      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2,'0')}`;
+                  };
+                  const timeLabel = `${formatTime(currentTotalMinutes)} - ${formatTime(nextTotalMinutes)}`;
+
                   return (
-                    <div key={hour} className="absolute w-full border-b flex" style={{ top: i * ROW_HEIGHT, height: ROW_HEIGHT }}>
-                      <div className="w-[70px] -mt-2 pr-2 text-right text-[10px] font-semibold text-gray-400">
-                        {displayHour} {ampm}
+                    <div key={i} className="absolute w-full border-b border-gray-200 flex" style={{ top: i * ROW_HEIGHT, height: ROW_HEIGHT }}>
+                      <div className="w-[120px] border-r border-gray-200 flex items-center justify-center text-[11px] font-medium text-gray-700 bg-white">
+                        {timeLabel}
                       </div>
-                      <div className="flex-1 border-l grid grid-cols-7">
+                      <div className="flex-1 grid grid-cols-7">
                         {Array.from({ length: 7 }).map((_, j) => (
-                          <div key={j} className="border-r last:border-r-0 h-full bg-gray-50/10"></div>
+                           <div key={j} className="border-r border-gray-200 last:border-r-0 h-full bg-white"></div>
                         ))}
                       </div>
                     </div>
@@ -181,41 +189,30 @@ export function MySchedule() {
                   if (dayOffset === -1) return null;
 
                   const { top, height } = calculatePosition(sched.timeStart, sched.timeEnd);
-                  const columnWidth = `calc((100% - 70px) / 7)`;
-                  const left = `calc(70px + (${dayOffset} * ${columnWidth}))`;
+                  const columnWidth = `calc((100% - 120px) / 7)`;
+                  const left = `calc(120px + (${dayOffset} * ${columnWidth}))`;
 
                   return (
                     <div
                       key={idx}
-                      className="absolute p-1 overflow-hidden transition-all hover:scale-[1.02] hover:z-20 group cursor-pointer"
+                      className="absolute border border-white cursor-pointer transition-transform hover:scale-[1.01] hover:z-20 hover:shadow-xl"
                       style={{
-                        top: top + 1,
-                        height: height - 2,
+                        top: top,
+                        height: height,
                         left: left,
-                        width: `calc(${columnWidth} - 2px)`,
-                        marginLeft: '1px'
+                        width: columnWidth,
                       }}
                       onClick={() => navigate(`/subjects/${sched.courseCode}`)}
                     >
-                      <div className={`h-full w-full rounded-lg border shadow-sm p-2 flex flex-col justify-between ${sched.type === 'Laboratory'
-                          ? 'bg-purple-50 border-purple-200 text-purple-900 shadow-purple-100 hover:bg-purple-100'
-                          : 'bg-blue-50 border-blue-200 text-blue-900 shadow-blue-100 hover:bg-blue-100'
-                        } transition-colors`}>
-                        <div>
-                          <p className="font-extrabold text-[8px] mb-0.5 uppercase tracking-wider opacity-60 line-clamp-1">{sched.type}</p>
-                          <h4 className="font-bold text-[10px] leading-tight group-hover:underline line-clamp-2">{sched.courseCode}</h4>
-                        </div>
-
-                        <div className="space-y-0.5 mt-auto">
-                          <div className="flex items-center gap-1 text-[9px] font-medium opacity-80">
-                            <MapPin className="w-2.5 h-2.5 text-orange-500" />
-                            <span className="truncate">{sched.room}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-[9px] font-medium opacity-80">
-                            <UserIcon className="w-2.5 h-2.5 text-orange-500" />
-                            <span className="truncate">{getProfessorName(sched.facultyId)}</span>
-                          </div>
-                        </div>
+                      <div className={`h-full w-full flex flex-col items-center justify-center p-2 text-center text-white ${
+                          sched.type === 'Laboratory'
+                            ? 'bg-[#1a237e]' // Deep Navy
+                            : 'bg-[#b71c1c]' // Deep Red
+                        }`}>
+                          <p className="font-bold text-[11px] leading-tight mb-1">{sched.courseCode}: {sched.section}</p>
+                          <p className="font-medium text-[10px] leading-snug">{sched.type}</p>
+                          <p className="font-medium text-[10px] leading-snug uppercase">{sched.room}</p>
+                          <p className="font-bold text-[10px] leading-snug mt-1">{getProfessorName(sched.facultyId)}</p>
                       </div>
                     </div>
                   );
