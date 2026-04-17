@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react'; // dashboard
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { 
@@ -32,26 +32,58 @@ export function Dashboard() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
+  const [news, setNews] = useState<any[] | null>(null);
+  const [weather, setWeather] = useState<any>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchExternalData = async () => {
+      try {
+        const [newsRes, weatherRes] = await Promise.all([
+          fetch('https://newsdata.io/api/1/news?apikey=pub_85b336861cb744f7b22fd60c87cebda9&language=en&category=technology,education&country=ph'),
+          fetch('https://api.openweathermap.org/data/2.5/weather?lat=14.2764&lon=121.1233&appid=b818d86532de2fd41fdbf08ff58da3a0&units=metric')
+        ]);
+        
+        if (newsRes.ok) {
+           const nData = await newsRes.json();
+           setNews(nData.results || []);
+        } else {
+           setNews([]);
+        }
+        if (weatherRes.ok) {
+           const wData = await weatherRes.json();
+           setWeather(wData);
+        }
+      } catch (e) {
+        console.error('External API error:', e);
+        setNews([]);
+      }
+    };
+    fetchExternalData();
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-         const [stuRes, schRes, facRes, crsRes] = await Promise.all([
+         const [stuRes, schRes, facRes, crsRes, annRes] = await Promise.all([
            fetchWithAuth('/students'),
            fetchWithAuth('/schedules'),
            fetchWithAuth('/faculty'),
-           fetchWithAuth('/courses')
+           fetchWithAuth('/courses'),
+           fetchWithAuth('/announcements')
          ]);
          
          const stu = stuRes.ok ? await stuRes.json() : { data: [] };
          const sch = schRes.ok ? await schRes.json() : { data: [] };
          const fac = facRes.ok ? await facRes.json() : { data: [] };
          const crs = crsRes.ok ? await crsRes.json() : { data: [] };
+         const ann = annRes.ok ? await annRes.json() : [];
 
         setStudents(stu.data || []);
         setSchedules(sch.data || []);
         setFaculty(fac.data || []);
         setCourses(crs.data || []);
+        setAnnouncements(Array.isArray(ann) ? ann : ann.data || []);
       } catch (error) {
         console.error('Data error:', error);
       } finally {
@@ -84,11 +116,31 @@ export function Dashboard() {
     { title: "Avg. GPA", value: students.length > 0 ? (students.reduce((sum, s) => sum + s.gpa, 0) / students.length).toFixed(2) : "0.00", icon: TrendingUp, color: "orange" },
   ];
 
-  const announcements = [
-    { title: "Project Defense 2026", content: "Capstone defense schedules are now final.", date: "Apr 25", author: "Dean Office" },
-    { title: "Tech Fest Night", content: "Celebration night for CCS students at the Gym.", date: "May 5", author: "Student Council" },
-    { title: "System Outage", content: "Expected downtime this coming weekend for DB sync.", date: "May 10", author: "IT Admin" }
+  const fallbackNews = [
+    { title: "CCS Announces Project Defense Schedule", content: "Capstone defense schedules are now available.", date: "Apr 25", author: "Dean Office", link: null },
+    { title: "Tech Fest Night 2026", content: "Celebration night for CCS students at the Gym.", date: "May 5", author: "Student Council", link: null },
   ];
+
+  const displayNews = useMemo(() => {
+    if (news && news.length > 0) {
+      return news.slice(0, 4).map(n => ({
+        title: n.title,
+        content: n.description || "Read the full story from the source.",
+        date: new Date(n.pubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        author: n.source_id,
+        link: n.link
+      }));
+    }
+    return fallbackNews;
+  }, [news]);
+
+  const typeColors: Record<string, string> = {
+    important: 'bg-red-100 text-red-700 border-red-200',
+    event: 'bg-blue-100 text-blue-700 border-blue-200',
+    warning: 'bg-amber-100 text-amber-700 border-amber-200',
+    success: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    info: 'bg-gray-100 text-gray-600 border-gray-200',
+  };
 
   if (isLoading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 text-[#FF7F11] animate-spin" /></div>;
 
@@ -141,9 +193,33 @@ export function Dashboard() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                 {/* Left: Action Widgets */}
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                 {/* Left Column: Announcements + Academic Content */}
                  <div className="lg:col-span-2 space-y-6">
+                    {/* Admin Announcements — from backend */}
+                    <Card className="rounded-[2rem] border-none shadow-xl bg-white overflow-hidden">
+                       <CardHeader className="bg-gray-50/50 p-5 border-b border-gray-100">
+                          <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                             <Megaphone className="w-4 h-4 text-[#FF7F11]" /> Announcements
+                          </CardTitle>
+                       </CardHeader>
+                       <CardContent className="p-5 space-y-4">
+                          {announcements.length === 0 ? (
+                            <p className="text-xs text-gray-400 italic text-center py-2">No announcements posted yet.</p>
+                          ) : announcements.slice(0, 4).map((ann: any, i: number) => (
+                            <div key={i} className="group">
+                               <div className="flex items-start gap-2 mb-1">
+                                  {ann.type && <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${typeColors[ann.type] || typeColors.info}`}>{ann.type}</span>}
+                                  <p className="text-xs font-black text-gray-900 uppercase leading-tight line-clamp-2">{ann.title}</p>
+                               </div>
+                               <p className="text-[9px] text-gray-400 font-bold uppercase mb-1">{ann.date} · {ann.author}</p>
+                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
+                               {i < Math.min(announcements.length, 4) - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                            </div>
+                          ))}
+                       </CardContent>
+                    </Card>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <Card className="rounded-[2.5rem] border-none shadow-xl bg-white p-8">
                          <div className="flex items-center gap-4 mb-6">
@@ -151,7 +227,7 @@ export function Dashboard() {
                             <h3 className="text-sm font-black uppercase tracking-widest">My Current Load</h3>
                          </div>
                          <div className="space-y-4">
-                            {mySubjects.slice(0, 4).map((sub, i) => (
+                            {mySubjects.slice(0, 6).map((sub, i) => (
                                <Link key={i} to={`/subjects/${sub.courseCode}`} className="flex items-center justify-between group">
                                   <span className="text-xs font-black text-gray-500 group-hover:text-gray-900 transition-colors uppercase tracking-tight">{sub.courseCode}</span>
                                   <span className="text-[10px] text-gray-400 font-bold uppercase truncate max-w-[120px]">{sub.day} {sub.timeStart}</span>
@@ -172,65 +248,59 @@ export function Dashboard() {
                          </div>
                       </Card>
                     </div>
-
-                    {/* New Event Banner to fill space */}
-                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-gray-900 text-white p-8 overflow-hidden relative">
-                       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/20 to-transparent pointer-events-none" />
-                       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                          <div>
-                             <PartyPopper className="w-8 h-8 text-[#FF7F11] mb-4" />
-                             <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Tech Symposium 2026</h3>
-                             <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-6">May 12, 2026 • Grand Hall, Main Campus</p>
-                             <div className="flex items-center gap-4">
-                                <Button className="bg-[#FF7F11] hover:bg-orange-600 rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest shadow-xl transition-transform active:scale-95">Secure Your Ticket</Button>
-                                <Button variant="outline" className="border-white/20 hover:bg-white/10 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest">Learn More</Button>
-                             </div>
-                          </div>
-                       </div>
-                    </Card>
                  </div>
 
-                 {/* Right: Announcements */}
+                 {/* Right Column: News + Weather */}
                  <div className="lg:col-span-1 space-y-6">
+                    {/* Latest News — from NewsData.io */}
                     <Card className="rounded-[2rem] border-none shadow-xl bg-white overflow-hidden">
-                       <CardHeader className="bg-gray-50/50 p-6 border-b border-gray-100 flex flex-row items-center justify-between">
+                       <CardHeader className="bg-gray-50/50 p-5 border-b border-gray-100">
                           <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                             <Megaphone className="w-4 h-4 text-[#FF7F11]" /> Announcements
+                             <Megaphone className="w-4 h-4 text-sky-500" /> Latest News
                           </CardTitle>
                        </CardHeader>
-                       <CardContent className="p-6 space-y-4">
-                          {announcements.map((ann, i) => (
-                            <div key={i} className="group cursor-pointer">
-                               <p className="text-xs font-black text-gray-900 uppercase group-hover:text-[#FF7F11] transition-colors">{ann.title}</p>
-                               <p className="text-[10px] text-gray-400 font-bold mb-2 uppercase">{ann.date} • {ann.author}</p>
-                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
-                               {i < announcements.length - 1 && <div className="h-px bg-gray-50 mt-4" />}
-                            </div>
+                       <CardContent className="p-5 space-y-4">
+                          {!news && <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-[#FF7F11]" /></div>}
+                          {displayNews.map((n: any, i) => (
+                            <a key={i} href={n.link || '#'} target="_blank" rel="noreferrer" className="block group">
+                               <p className="text-xs font-black text-gray-900 uppercase group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">{n.title}</p>
+                               <p className="text-[9px] text-gray-400 font-bold my-1 uppercase">{n.date} · {n.author}</p>
+                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
+                               {i < displayNews.length - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                            </a>
                           ))}
                        </CardContent>
                     </Card>
 
-                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-[#FF7F11] text-white p-8">
-                       <div className="flex items-center gap-3 mb-6">
-                          <CheckCircle2 className="w-6 h-6 text-white/80" />
-                          <h3 className="text-sm font-black uppercase tracking-widest">To-Do List</h3>
-                       </div>
-                       <div className="space-y-6">
-                          <div className="flex items-start gap-4 opacity-80 hover:opacity-100 cursor-pointer transition-opacity">
-                             <div className="w-5 h-5 rounded border-2 border-white/40 mt-0.5 flex-shrink-0" />
-                             <div>
-                                <p className="text-xs font-black uppercase tracking-tight leading-none mb-1">Update Student Profile</p>
-                                <p className="text-[10px] font-bold uppercase text-white/70">Required for ID Registration</p>
-                             </div>
-                          </div>
-                          <div className="flex items-start gap-4 opacity-80 hover:opacity-100 cursor-pointer transition-opacity">
-                             <div className="w-5 h-5 rounded border-2 border-white/40 mt-0.5 flex-shrink-0" />
-                             <div>
-                                <p className="text-xs font-black uppercase tracking-tight leading-none mb-1">Clear Library Accounts</p>
-                                <p className="text-[10px] font-bold uppercase text-white/70">Overdue books detected</p>
-                             </div>
-                          </div>
-                       </div>
+                    {/* Live Weather — OpenWeather */}
+                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-gray-900 text-white overflow-hidden relative">
+                       <div className="absolute inset-0 bg-gradient-to-br from-sky-900/50 to-gray-900 pointer-events-none" />
+                       <CardContent className="p-6 relative z-10">
+                          <p className="text-sky-400 text-[10px] font-black uppercase tracking-widest mb-1">Live Weather</p>
+                          <p className="text-white font-black text-lg uppercase tracking-tight">Cabuyao City, PH</p>
+                          {weather ? (
+                            <>
+                              <div className="flex items-center justify-between mt-4">
+                                 <div>
+                                    <p className="text-5xl font-black tracking-tighter">{Math.round(weather.main.temp)}°C</p>
+                                    <p className="text-gray-400 text-xs uppercase tracking-wider mt-1 capitalize">{weather.weather[0].description}</p>
+                                 </div>
+                                 <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} alt="weather icon" className="w-16 h-16 opacity-90" />
+                              </div>
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 border-t border-white/10 pt-4 text-white">
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Feels Like</p><p className="text-sm font-bold">{Math.round(weather.main.feels_like)}°C</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Humidity</p><p className="text-sm font-bold">{weather.main.humidity}%</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Wind</p><p className="text-sm font-bold">{weather.wind?.speed} m/s</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Pressure</p><p className="text-sm font-bold">{weather.main.pressure} hPa</p></div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-8 gap-2">
+                              <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+                              <p className="text-[10px] text-gray-500 uppercase tracking-widest">Fetching conditions...</p>
+                            </div>
+                          )}
+                       </CardContent>
                     </Card>
                  </div>
               </div>
@@ -247,7 +317,32 @@ export function Dashboard() {
                  <Presentation className="w-12 h-12 text-indigo-400" />
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                 {/* Left Column: Announcements + Teaching Content */}
                  <div className="lg:col-span-2 space-y-6">
+                    {/* Admin Announcements — from backend */}
+                    <Card className="rounded-[2rem] border-none shadow-xl bg-white overflow-hidden">
+                       <CardHeader className="bg-gray-50/50 p-5 border-b border-gray-100">
+                          <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                             <Megaphone className="w-4 h-4 text-[#FF7F11]" /> Announcements
+                          </CardTitle>
+                       </CardHeader>
+                       <CardContent className="p-5 space-y-4">
+                          {announcements.length === 0 ? (
+                            <p className="text-xs text-gray-400 italic text-center py-2">No announcements posted yet.</p>
+                          ) : announcements.slice(0, 4).map((ann: any, i: number) => (
+                            <div key={i} className="group">
+                               <div className="flex items-start gap-2 mb-1">
+                                  {ann.type && <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${typeColors[ann.type] || typeColors.info}`}>{ann.type}</span>}
+                                  <p className="text-xs font-black text-gray-900 uppercase leading-tight line-clamp-2">{ann.title}</p>
+                               </div>
+                               <p className="text-[9px] text-gray-400 font-bold uppercase mb-1">{ann.date} · {ann.author}</p>
+                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
+                               {i < Math.min(announcements.length, 4) - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                            </div>
+                          ))}
+                       </CardContent>
+                    </Card>
+
                     <Card className="rounded-[2.5rem] border-none shadow-xl bg-white p-8">
                        <div className="flex items-center gap-4 mb-6">
                           <Calendar className="w-6 h-6 text-[#FF7F11]" />
@@ -263,60 +358,59 @@ export function Dashboard() {
                           {myClasses.length === 0 && <p className="text-xs text-gray-400 italic">No classes assigned yet.</p>}
                        </div>
                     </Card>
-
-                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-gray-900 text-white p-8 overflow-hidden relative">
-                       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/20 to-transparent pointer-events-none" />
-                       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                          <div>
-                             <PartyPopper className="w-8 h-8 text-[#FF7F11] mb-4" />
-                             <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Faculty Mixer Event</h3>
-                             <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-6">May 12, 2026 • Faculty Lounge</p>
-                             <Button className="bg-[#FF7F11] hover:bg-orange-600 rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest shadow-xl transition-transform active:scale-95">RSVP Now</Button>
-                          </div>
-                       </div>
-                    </Card>
                  </div>
-                 
+
+                 {/* Right Column: News + Weather */}
                  <div className="lg:col-span-1 space-y-6">
+                    {/* Latest News — NewsData.io */}
                     <Card className="rounded-[2rem] border-none shadow-xl bg-white overflow-hidden">
-                       <CardHeader className="bg-gray-50/50 p-6 border-b border-gray-100 flex flex-row items-center justify-between">
+                       <CardHeader className="bg-gray-50/50 p-5 border-b border-gray-100">
                           <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                             <Megaphone className="w-4 h-4 text-[#FF7F11]" /> Announcements
+                             <Megaphone className="w-4 h-4 text-sky-500" /> Latest News
                           </CardTitle>
                        </CardHeader>
-                       <CardContent className="p-6 space-y-4">
-                          {announcements.map((ann, i) => (
-                            <div key={i} className="group cursor-pointer">
-                               <p className="text-xs font-black text-gray-900 uppercase group-hover:text-[#FF7F11] transition-colors">{ann.title}</p>
-                               <p className="text-[10px] text-gray-400 font-bold mb-2 uppercase">{ann.date} • {ann.author}</p>
-                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
-                               {i < announcements.length - 1 && <div className="h-px bg-gray-50 mt-4" />}
-                            </div>
+                       <CardContent className="p-5 space-y-4">
+                          {!news && <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-[#FF7F11]" /></div>}
+                          {displayNews.map((n: any, i) => (
+                            <a key={i} href={n.link || '#'} target="_blank" rel="noreferrer" className="block group">
+                               <p className="text-xs font-black text-gray-900 uppercase group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">{n.title}</p>
+                               <p className="text-[9px] text-gray-400 font-bold my-1 uppercase">{n.date} · {n.author}</p>
+                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
+                               {i < displayNews.length - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                            </a>
                           ))}
                        </CardContent>
                     </Card>
 
-                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-[#FF7F11] text-white p-8">
-                       <div className="flex items-center gap-3 mb-6">
-                          <AlertCircle className="w-6 h-6 text-white/80" />
-                          <h3 className="text-sm font-black uppercase tracking-widest">Faculty Reminders</h3>
-                       </div>
-                       <div className="space-y-6">
-                          <div className="flex items-start gap-4 opacity-80 hover:opacity-100 cursor-pointer transition-opacity">
-                             <div className="w-5 h-5 rounded border-2 border-white/40 mt-0.5 flex-shrink-0" />
-                             <div>
-                                <p className="text-xs font-black uppercase tracking-tight leading-none mb-1">Submit Midterm Grades</p>
-                                <p className="text-[10px] font-bold uppercase text-white/70">Due by end of week</p>
-                             </div>
-                          </div>
-                          <div className="flex items-start gap-4 opacity-80 hover:opacity-100 cursor-pointer transition-opacity">
-                             <div className="w-5 h-5 rounded border-2 border-white/40 mt-0.5 flex-shrink-0" />
-                             <div>
-                                <p className="text-xs font-black uppercase tracking-tight leading-none mb-1">Finalize Syllabus Formats</p>
-                                <p className="text-[10px] font-bold uppercase text-white/70">Needs Dean Approval</p>
-                             </div>
-                          </div>
-                       </div>
+                    {/* Live Weather — OpenWeather */}
+                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-gray-900 text-white overflow-hidden relative">
+                       <div className="absolute inset-0 bg-gradient-to-br from-sky-900/50 to-gray-900 pointer-events-none" />
+                       <CardContent className="p-6 relative z-10">
+                          <p className="text-sky-400 text-[10px] font-black uppercase tracking-widest mb-1">Live Weather</p>
+                          <p className="text-white font-black text-lg uppercase tracking-tight">Cabuyao City, PH</p>
+                          {weather ? (
+                            <>
+                              <div className="flex items-center justify-between mt-4">
+                                 <div>
+                                    <p className="text-5xl font-black tracking-tighter">{Math.round(weather.main.temp)}°C</p>
+                                    <p className="text-gray-400 text-xs uppercase tracking-wider mt-1 capitalize">{weather.weather[0].description}</p>
+                                 </div>
+                                 <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} alt="weather icon" className="w-16 h-16 opacity-90" />
+                              </div>
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 border-t border-white/10 pt-4 text-white">
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Feels Like</p><p className="text-sm font-bold">{Math.round(weather.main.feels_like)}°C</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Humidity</p><p className="text-sm font-bold">{weather.main.humidity}%</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Wind</p><p className="text-sm font-bold">{weather.wind?.speed} m/s</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Pressure</p><p className="text-sm font-bold">{weather.main.pressure} hPa</p></div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-8 gap-2">
+                              <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+                              <p className="text-[10px] text-gray-500 uppercase tracking-widest">Fetching conditions...</p>
+                            </div>
+                          )}
+                       </CardContent>
                     </Card>
                  </div>
               </div>
@@ -358,7 +452,7 @@ export function Dashboard() {
                                </td>
                                <td className="px-6 py-4 text-center">
                                   <span className="text-[10px] font-black text-gray-900 uppercase">GPA {s.gpa.toFixed(2)}</span>
-                               </td>
+                                </td>
                                <td className="px-6 py-4 text-right">
                                   {s.classification === 'Irregular' && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black uppercase rounded border border-amber-200">IRREG</span>}
                                </td>
