@@ -162,6 +162,17 @@ export function MyGrades() {
     const mySchedules = schedules.filter(s => s.section === student?.section);
     const gradedCodes = new Set(gradedRows.map(r => r.code.toLowerCase()));
     
+    // Determine Current Active Term based on Date
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    let sem = '1st Sem';
+    if (month >= 1 && month <= 5) sem = '2nd Sem';
+    else if (month >= 6 && month <= 7) sem = 'Summer';
+    
+    const currentTerm = `${sem} AY ${year}-${year + 1}`;
+    const currentSchoolYear = `${year}-${year + 1}`;
+
     const pendingRows: SubjectRow[] = mySchedules
       .filter(s => !gradedCodes.has(s.courseCode.toLowerCase()))
       .map(s => {
@@ -171,7 +182,7 @@ export function MyGrades() {
           name: course?.name || s.courseCode,
           units: course?.units ?? 3,
           prelim: null, midterm: null, finals: null, finalGrade: null, remarks: null,
-          semester: 'Ongoing', school_year: ''
+          semester: currentTerm, school_year: currentSchoolYear
         };
       });
 

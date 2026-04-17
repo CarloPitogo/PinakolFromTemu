@@ -221,16 +221,8 @@ export function MyClasses() {
   };
 
   const termsList = useMemo(() => {
-    const years = [2024, 2025, 2026, 2027];
-    const sems = ['1st Sem', '2nd Sem', 'Summer'];
-    const list: string[] = [];
-    years.forEach(y => {
-      sems.forEach(s => {
-        list.push(`${s} AY ${y}-${y+1}`);
-      });
-    });
-    return list.reverse();
-  }, []);
+    return activeTermString ? [activeTermString] : [];
+  }, [activeTermString]);
 
   const filteredClasses = classes.filter(c => 
     c.courseName.toLowerCase().includes(searchTerm.toLowerCase()) || 
