@@ -31,6 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('students', StudentController::class);
 
     // Faculty Module API
+    Route::get('faculty/classes', [FacultyController::class, 'getMyClasses']);
+    Route::get('faculty/classes/{course_code}/{section}/students', [FacultyController::class, 'getClassStudents']);
     Route::apiResource('faculty', FacultyController::class);
     Route::apiResource('tasks', TaskController::class);
     Route::apiResource('submissions', SubmissionController::class);
@@ -40,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('grades', [GradeController::class, 'index']);
     Route::post('grades/upsert', [GradeController::class, 'upsert']);
     Route::post('grades/bulk-upsert', [GradeController::class, 'bulkUpsert']);
-    Route::post('grades/class', [GradeController::class, 'getClassGrades']);
+    Route::get('grades/class', [GradeController::class, 'getClassGrades']);
 
     // Courses & Instruction API
     Route::apiResource('courses', CourseController::class);

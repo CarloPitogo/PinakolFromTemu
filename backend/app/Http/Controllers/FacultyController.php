@@ -49,4 +49,47 @@ class FacultyController extends Controller
         $faculty = $this->facultyService->getFacultyById($id);
         $this->authorize('delete', $faculty);
     }
+
+    public function getMyClasses(Request $request)
+    {
+        $user = $request->user();
+        if ($user->role !== 'faculty') return response()->json(['message' => 'Unauthorized'], 403);
+        
+        $faculty = Faculty::where('email', $user->email)->first();
+        if (!$faculty) return response()->json(['data' => []]);
+
+        $schedules = \App\Models\Schedule::where('faculty_id', $faculty->id)->get();
+        // Group by course_code + section
+        $classesMap = [];
+        foreach($schedules as $s) {
+            $key = $s->course_code . '_' . $s->section;
+            if(!isset($classesMap[$key])) {
+                $course = \App\Models\Course::where('code', $s->course_code)->first();
+                $studentCount = \App\Models\Student::where('section', $s->section)->count();
+                $classesMap[$key] = [
+                    'courseCode' => $s->course_code,
+                    'courseName' => $course ? $course->name : $s->course_code,
+                    'section' => $s->section,
+                    'studentCount' => $studentCount,
+                    'day' => $s->day,
+                    'timeStart' => $s->time_start,
+                    'room' => $s->room,
+                ];
+            } else {
+                // Combine days/times if needed, but for simplicity we keep the first one found or append
+            }
+        }
+        
+        return response()->json(['data' => array_values($classesMap)]);
+    }
+
+    public function getClassStudents(Request $request, $course_code, $section)
+    {
+        $user = $request->user();
+        if ($user->role !== 'faculty') return response()->json(['message' => 'Unauthorized'], 403);
+        
+        // Return students matching section
+        $students = \App\Models\Student::where('section', $section)->get();
+        return response()->json(['data' => $students]);
+    }
 }
