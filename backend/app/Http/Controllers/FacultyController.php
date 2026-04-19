@@ -36,18 +36,74 @@ class FacultyController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Faculty::class);
+        $validated = $request->validate([
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
+            'email' => 'required|email|unique:faculties,email',
+            'employeeNumber' => 'required|string|unique:faculties,employee_number',
+            'department' => 'required|string|max:255',
+            'position' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'status' => 'required|string|in:Active,Inactive',
+            'specialization' => 'nullable|array',
+        ]);
+
+        // Map camelCase to snake_case for DB
+        $dbData = [
+            'first_name' => $validated['firstName'],
+            'last_name' => $validated['lastName'],
+            'email' => $validated['email'],
+            'employee_number' => $validated['employeeNumber'],
+            'department' => $validated['department'],
+            'position' => $validated['position'],
+            'phone' => $validated['phone'] ?? 'N/A',
+            'status' => $validated['status'],
+            'specialization' => $validated['specialization'] ?? [],
+        ];
+
+        $faculty = $this->facultyService->createFaculty($dbData);
+        return new FacultyResource($faculty);
     }
 
     public function update(Request $request, string $id)
     {
         $faculty = $this->facultyService->getFacultyById($id);
         $this->authorize('update', $faculty);
+
+        $validated = $request->validate([
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
+            'email' => 'required|email|unique:faculties,email,' . $id,
+            'employeeNumber' => 'required|string|unique:faculties,employee_number,' . $id,
+            'department' => 'required|string|max:255',
+            'position' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'status' => 'required|string|in:Active,Inactive',
+            'specialization' => 'nullable|array',
+        ]);
+
+        $dbData = [
+            'first_name' => $validated['firstName'],
+            'last_name' => $validated['lastName'],
+            'email' => $validated['email'],
+            'employee_number' => $validated['employeeNumber'],
+            'department' => $validated['department'],
+            'position' => $validated['position'],
+            'phone' => $validated['phone'] ?? 'N/A',
+            'status' => $validated['status'],
+            'specialization' => $validated['specialization'] ?? [],
+        ];
+
+        $faculty = $this->facultyService->updateFaculty($id, $dbData);
+        return new FacultyResource($faculty);
     }
 
     public function destroy(string $id)
     {
         $faculty = $this->facultyService->getFacultyById($id);
         $this->authorize('delete', $faculty);
+        $this->facultyService->deleteFaculty($id);
+        return response()->json(['message' => 'Faculty deleted successfully']);
     }
 
     public function getMyClasses(Request $request)
