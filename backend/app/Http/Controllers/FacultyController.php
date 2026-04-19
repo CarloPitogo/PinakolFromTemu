@@ -19,10 +19,10 @@ class FacultyController extends Controller
         $this->facultyService = $facultyService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Faculty::class);
-        $faculties = $this->facultyService->getAllFaculty();
+        $faculties = $this->facultyService->getAllFaculty($request->all());
         return FacultyResource::collection($faculties);
     }
 

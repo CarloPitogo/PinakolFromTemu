@@ -9,9 +9,21 @@ class FacultyService
     /**
      * Get all faculty for the listing view.
      */
-    public function getAllFaculty()
+    public function getAllFaculty(array $filters = [])
     {
-        return Faculty::all();
+        $query = Faculty::query();
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'LIKE', "%{$search}%")
+                  ->orWhere('last_name', 'LIKE', "%{$search}%")
+                  ->orWhere('department', 'LIKE', "%{$search}%")
+                  ->orWhere('employee_number', 'LIKE', "%{$search}%");
+            });
+        }
+
+        return $query->latest()->paginate($filters['perPage'] ?? 10);
     }
 
     /**

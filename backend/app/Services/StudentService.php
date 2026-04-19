@@ -82,7 +82,12 @@ class StudentService
             $query->where('gpa', '<=', (float)$filters['maxGPA']);
         }
 
-        // 3. Program/Year Filter
+        // 3. Status Filter (Active, Inactive, Suspended, Graduated)
+        if (!empty($filters['status']) && $filters['status'] !== 'All') {
+            $query->where('status', $filters['status']);
+        }
+
+        // 4. Program/Year Filter
         if (isset($filters['program']) && $filters['program'] !== 'All') {
             $query->where('program', $filters['program']);
         }
@@ -114,7 +119,18 @@ class StudentService
             });
         }
 
-        return $query->get();
+        // 7. General Search (Name, Student Number, Email)
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'LIKE', "%{$search}%")
+                  ->orWhere('last_name', 'LIKE', "%{$search}%")
+                  ->orWhere('student_number', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+
+        return $query->latest()->paginate($filters['perPage'] ?? 15);
     }
 
     /**

@@ -28,6 +28,8 @@ import { Student } from '../types';
 import { toast } from 'sonner';
 import { Link } from 'react-router';
 import { fetchWithAuth } from '../context/AuthContext';
+import { PaginationControls } from '../components/ui/pagination-controls';
+import { useCallback } from 'react';
 
 export function Search() {
   // Advanced Filters
@@ -44,6 +46,52 @@ export function Search() {
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationMeta, setPaginationMeta] = useState({
+    lastPage: 1,
+    total: 0
+  });
+
+  const loadStudents = useCallback(async (page = 1) => {
+    setIsSearching(true);
+    try {
+      const params = new URLSearchParams();
+      if (minGPA) params.append('minGPA', minGPA);
+      if (maxGPA) params.append('maxGPA', maxGPA);
+      if (selectedProgram !== 'All') params.append('program', selectedProgram);
+      if (selectedYearLevel !== 'All') params.append('yearLevel', selectedYearLevel);
+      if (hasViolations !== 'all') params.append('hasViolations', hasViolations);
+      if (minHeight) params.append('minHeight', minHeight);
+      
+      params.append('page', page.toString());
+      params.append('perPage', '10');
+
+      selectedSkills.forEach(skill => params.append('skills[]', skill));
+      selectedSports.forEach(sport => params.append('sports[]', sport));
+
+      const response = await fetchWithAuth(`/students?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch students');
+      const result = await response.json();
+      
+      setStudents(result.data || []);
+      setPaginationMeta({
+        lastPage: result.meta?.last_page || 1,
+        total: result.meta?.total || 0
+      });
+      setCurrentPage(result.meta?.current_page || 1);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      toast.error('Failed to load search results');
+    } finally {
+      setIsSearching(false);
+    }
+  }, [minGPA, maxGPA, selectedProgram, selectedYearLevel, selectedSkills, selectedSports, minHeight, hasViolations]);
+
+  const handlePageChange = (page: number) => {
+    loadStudents(page);
+  };
 
   // 1. Load Filter Metadata (Skills)
   useEffect(() => {
@@ -64,35 +112,11 @@ export function Search() {
 
   // 2. Load Filtered Students (Reactive to Filter Changes)
   useEffect(() => {
-    const loadStudents = async () => {
-      setIsSearching(true);
-      try {
-        const params = new URLSearchParams();
-        if (minGPA) params.append('minGPA', minGPA);
-        if (maxGPA) params.append('maxGPA', maxGPA);
-        if (selectedProgram !== 'All') params.append('program', selectedProgram);
-        if (selectedYearLevel !== 'All') params.append('yearLevel', selectedYearLevel);
-        if (hasViolations !== 'all') params.append('hasViolations', hasViolations);
-        if (minHeight) params.append('minHeight', minHeight);
-        
-        selectedSkills.forEach(skill => params.append('skills[]', skill));
-        selectedSports.forEach(sport => params.append('sports[]', sport));
-
-        const response = await fetchWithAuth(`/students?${params.toString()}`);
-        if (!response.ok) throw new Error('Failed to fetch students');
-        const data = await response.json();
-        setStudents(data.data || []);
-      } catch (error) {
-        console.error('Error fetching students:', error);
-        toast.error('Failed to load search results');
-      } finally {
-        setIsSearching(false);
-      }
-    };
-
-    const debounceTimer = setTimeout(loadStudents, 500); // 500ms delay to prevent flood
+    const debounceTimer = setTimeout(() => {
+      loadStudents(1);
+    }, 500); // 500ms delay to prevent flood
     return () => clearTimeout(debounceTimer);
-  }, [minGPA, maxGPA, selectedProgram, selectedYearLevel, selectedSkills, selectedSports, minHeight, hasViolations]);
+  }, [loadStudents]);
 
   const filteredStudents = students; // Backend handles filtering now
 
@@ -496,6 +520,14 @@ export function Search() {
                   ))
                 )}
               </div>
+              
+              <PaginationControls
+                currentPage={currentPage}
+                lastPage={paginationMeta.lastPage}
+                total={paginationMeta.total}
+                onPageChange={handlePageChange}
+                isLoading={isSearching}
+              />
             </CardContent>
           </Card>
         </div>

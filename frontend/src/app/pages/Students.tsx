@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { fetchWithAuth } from '../context/AuthContext';
 import { Student } from '../types';
 import { StudentModal } from '../components/StudentModal';
+import { PaginationControls } from '../components/ui/pagination-controls';
 
 export function Students() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,45 +28,64 @@ export function Students() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        const queryParams = new URLSearchParams();
-        if (skillFilter.trim()) {
-          queryParams.append('skill', skillFilter.trim());
-        }
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationMeta, setPaginationMeta] = useState({
+    lastPage: 1,
+    total: 0
+  });
 
-        const response = await fetchWithAuth(`/students?${queryParams.toString()}`);
-        if (!response.ok) throw new Error('Failed to fetch students');
+  const loadStudents = useCallback(async (page = 1) => {
+    setIsLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        search: searchTerm,
+        status: statusFilter === 'All' ? '' : statusFilter,
+        program: programFilter === 'All' ? '' : programFilter,
+        skill: skillFilter.trim(),
+        perPage: '10'
+      });
 
-        const data = await response.json();
+      const response = await fetchWithAuth(`/students?${queryParams.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch students');
 
-        // 🔴 EXAM REQUIREMENT: Output the Raw Database Query 🔴
-        if (data.meta && data.meta.executed_database_queries) {
-          console.log("%c----- [LAB EXAM] BACKEND DATABASE QUERY EXECUTED -----", "color: #ff7f11; font-weight: bold; font-size: 14px;");
-          console.log("Skill Filter Mode:", data.meta.is_active_skill_filter ? "ACTIVE" : "INACTIVE");
-          console.log("Captured SQL Queries:", data.meta.executed_database_queries);
-          console.log("-------------------------------------------------------");
-        }
+      const data = await response.json();
 
-        setStudents(data.data || []);
-      } catch (error) {
-        console.error('Error fetching students:', error);
-        toast.error('Failed to load students');
-      } finally {
-        setIsLoading(false);
+      // 🔴 EXAM REQUIREMENT: Output the Raw Database Query 🔴
+      if (data.meta && data.meta.executed_database_queries) {
+        console.log("%c----- [LAB EXAM] BACKEND DATABASE QUERY EXECUTED -----", "color: #ff7f11; font-weight: bold; font-size: 14px;");
+        console.log("Skill Filter Mode:", data.meta.is_active_skill_filter ? "ACTIVE" : "INACTIVE");
+        console.log("Captured SQL Queries:", data.meta.executed_database_queries);
+        console.log("-------------------------------------------------------");
       }
-    };
 
-    // Tiny debounce for smooth typing query requests
+      setStudents(data.data || []);
+      setPaginationMeta({
+        lastPage: data.meta?.last_page || 1,
+        total: data.meta?.total || 0
+      });
+      setCurrentPage(data.meta?.current_page || 1);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      toast.error('Failed to load students');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchTerm, statusFilter, programFilter, skillFilter]);
+
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
-      loadStudents();
+      loadStudents(1);
     }, 300);
-
     return () => clearTimeout(timeoutId);
-  }, [skillFilter]);
+  }, [loadStudents]);
 
-  // Levenshtein distance for fuzzy matching
+  const handlePageChange = (page: number) => {
+    loadStudents(page);
+  };
+
+  // Levenshtein distance for fuzzy matching UI highlighting
   const levenshtein = (a: string, b: string): number => {
     const matrix: number[][] = [];
     for (let i = 0; i <= b.length; i++) matrix[i] = [i];
@@ -100,21 +120,6 @@ export function Students() {
     if (levenshtein(s, q) <= tolerance) return true;
     return false;
   };
-
-  const filteredStudents = students.filter(student => {
-    const matchesSearch =
-      student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.studentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus = statusFilter === 'All' || student.status === statusFilter;
-    const matchesProgram = programFilter === 'All' || student.program === programFilter;
-
-    // We removed the frontend matchesSkill because the backend directly manages the SQL data filtering
-
-    return matchesSearch && matchesStatus && matchesProgram;
-  });
 
   const programs = Array.from(new Set(students.map(s => s.program)));
 
@@ -202,14 +207,14 @@ export function Students() {
 
       {/* Results */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Showing {filteredStudents.length} of {students.length} students
+        <p className="text-sm text-gray-600 italic font-medium">
+          Found <span className="text-[#FF7F11] font-bold">{paginationMeta.total}</span> students matching your criteria
         </p>
       </div>
 
       {/* Student List */}
       <div className="grid grid-cols-1 gap-4">
-        {filteredStudents.map((student) => (
+        {students.map((student) => (
           <Card key={student.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -304,6 +309,14 @@ export function Students() {
           </Card>
         ))}
       </div>
+
+      <PaginationControls
+        currentPage={currentPage}
+        lastPage={paginationMeta.lastPage}
+        total={paginationMeta.total}
+        onPageChange={handlePageChange}
+        isLoading={isLoading}
+      />
 
       <StudentModal
         isOpen={isModalOpen}

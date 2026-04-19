@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -26,6 +26,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "../components/ui/dialog";
+import { PaginationControls } from '../components/ui/pagination-controls';
 
 export function Faculty() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,6 +35,51 @@ export function Faculty() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<FacultyType | null>(null);
   
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationMeta, setPaginationMeta] = useState({
+    lastPage: 1,
+    total: 0
+  });
+
+  const fetchFaculty = useCallback(async (page = 1, search = '') => {
+    setIsLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        search: search,
+        perPage: '10'
+      });
+      
+      const response = await fetchWithAuth(`/faculty?${queryParams.toString()}`);
+      if (response.ok) {
+        const result = await response.json();
+        setFacultyData(result.data || []);
+        setPaginationMeta({
+          lastPage: result.meta?.last_page || 1,
+          total: result.meta?.total || 0
+        });
+        setCurrentPage(result.meta?.current_page || 1);
+      }
+    } catch (error) {
+      console.error('Error fetching faculty:', error);
+      toast.error('Failed to load faculty directory');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchFaculty(1, searchTerm);
+    }, 300); // Debounce search
+    return () => clearTimeout(timer);
+  }, [searchTerm, fetchFaculty]);
+
+  const handlePageChange = (page: number) => {
+    fetchFaculty(page, searchTerm);
+  };
+
   // Form State
   const [formData, setFormData] = useState({
     firstName: '',
@@ -46,26 +92,6 @@ export function Faculty() {
     status: 'Active',
     skills: '' // Temporary string for input
   });
-
-  const fetchFaculty = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetchWithAuth('/faculty');
-      if (response.ok) {
-        const data = await response.json();
-        setFacultyData(data.data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching faculty:', error);
-      toast.error('Failed to load faculty directory');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFaculty();
-  }, []);
 
   const handleOpenModal = (faculty: FacultyType | null = null) => {
     if (faculty) {
@@ -146,12 +172,7 @@ export function Faculty() {
     }
   };
 
-  const filteredFaculty = facultyData.filter(faculty =>
-    faculty.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    faculty.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    faculty.employeeNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
 
   if (isLoading && facultyData.length === 0) {
     return (
@@ -342,7 +363,7 @@ export function Faculty() {
 
       {/* Faculty Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredFaculty.map((faculty) => (
+        {facultyData.map((faculty) => (
           <Card key={faculty.id} className="border-none shadow-sm hover:shadow-xl transition-all duration-300 rounded-[2rem] bg-white group overflow-hidden relative">
             <div className={`absolute top-0 left-0 w-1.5 h-full ${faculty.status === 'Active' ? 'bg-[#FF7F11]' : 'bg-gray-300'}`}></div>
             <CardContent className="p-8">
@@ -434,6 +455,14 @@ export function Faculty() {
           </Card>
         ))}
       </div>
+
+      <PaginationControls
+        currentPage={currentPage}
+        lastPage={paginationMeta.lastPage}
+        total={paginationMeta.total}
+        onPageChange={handlePageChange}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
