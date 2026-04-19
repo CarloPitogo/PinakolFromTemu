@@ -205,17 +205,17 @@ export function Dashboard() {
                        </CardHeader>
                        <CardContent className="p-5 space-y-4">
                           {announcements.length === 0 ? (
-                            <p className="text-xs text-gray-400 italic text-center py-2">No announcements posted yet.</p>
+                             <p className="text-xs text-gray-400 italic text-center py-2">No announcements posted yet.</p>
                           ) : announcements.slice(0, 4).map((ann: any, i: number) => (
-                            <div key={i} className="group">
-                               <div className="flex items-start gap-2 mb-1">
-                                  {ann.type && <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${typeColors[ann.type] || typeColors.info}`}>{ann.type}</span>}
-                                  <p className="text-xs font-black text-gray-900 uppercase leading-tight line-clamp-2">{ann.title}</p>
-                               </div>
-                               <p className="text-[9px] text-gray-400 font-bold uppercase mb-1">{ann.date} · {ann.author}</p>
-                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
-                               {i < Math.min(announcements.length, 4) - 1 && <div className="h-px bg-gray-100 mt-3" />}
-                            </div>
+                             <div key={i} className="group">
+                                <div className="flex items-start gap-2 mb-1">
+                                   {ann.type && <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${typeColors[ann.type] || typeColors.info}`}>{ann.type}</span>}
+                                   <p className="text-xs font-black text-gray-900 uppercase leading-tight line-clamp-2">{ann.title}</p>
+                                </div>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase mb-1">{ann.date} · {ann.author}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
+                                {i < Math.min(announcements.length, 4) - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                             </div>
                           ))}
                        </CardContent>
                     </Card>
@@ -262,12 +262,12 @@ export function Dashboard() {
                        <CardContent className="p-5 space-y-4">
                           {!news && <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-[#FF7F11]" /></div>}
                           {displayNews.map((n: any, i) => (
-                            <a key={i} href={n.link || '#'} target="_blank" rel="noreferrer" className="block group">
-                               <p className="text-xs font-black text-gray-900 uppercase group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">{n.title}</p>
-                               <p className="text-[9px] text-gray-400 font-bold my-1 uppercase">{n.date} · {n.author}</p>
-                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
-                               {i < displayNews.length - 1 && <div className="h-px bg-gray-100 mt-3" />}
-                            </a>
+                             <a key={i} href={n.link || '#'} target="_blank" rel="noreferrer" className="block group">
+                                <p className="text-xs font-black text-gray-900 uppercase group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">{n.title}</p>
+                                <p className="text-[9px] text-gray-400 font-bold my-1 uppercase">{n.date} · {n.author}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
+                                {i < displayNews.length - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                             </a>
                           ))}
                        </CardContent>
                     </Card>
@@ -296,8 +296,8 @@ export function Dashboard() {
                             </>
                           ) : (
                             <div className="flex flex-col items-center justify-center py-8 gap-2">
-                              <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-                              <p className="text-[10px] text-gray-500 uppercase tracking-widest">Fetching conditions...</p>
+                               <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+                               <p className="text-[10px] text-gray-500 uppercase tracking-widest">Fetching conditions...</p>
                             </div>
                           )}
                        </CardContent>
@@ -328,17 +328,17 @@ export function Dashboard() {
                        </CardHeader>
                        <CardContent className="p-5 space-y-4">
                           {announcements.length === 0 ? (
-                            <p className="text-xs text-gray-400 italic text-center py-2">No announcements posted yet.</p>
+                             <p className="text-xs text-gray-400 italic text-center py-2">No announcements posted yet.</p>
                           ) : announcements.slice(0, 4).map((ann: any, i: number) => (
-                            <div key={i} className="group">
-                               <div className="flex items-start gap-2 mb-1">
-                                  {ann.type && <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${typeColors[ann.type] || typeColors.info}`}>{ann.type}</span>}
-                                  <p className="text-xs font-black text-gray-900 uppercase leading-tight line-clamp-2">{ann.title}</p>
-                               </div>
-                               <p className="text-[9px] text-gray-400 font-bold uppercase mb-1">{ann.date} · {ann.author}</p>
-                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
-                               {i < Math.min(announcements.length, 4) - 1 && <div className="h-px bg-gray-100 mt-3" />}
-                            </div>
+                             <div key={i} className="group">
+                                <div className="flex items-start gap-2 mb-1">
+                                   {ann.type && <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${typeColors[ann.type] || typeColors.info}`}>{ann.type}</span>}
+                                   <p className="text-xs font-black text-gray-900 uppercase leading-tight line-clamp-2">{ann.title}</p>
+                                </div>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase mb-1">{ann.date} · {ann.author}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{ann.content}</p>
+                                {i < Math.min(announcements.length, 4) - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                             </div>
                           ))}
                        </CardContent>
                     </Card>
@@ -372,12 +372,12 @@ export function Dashboard() {
                        <CardContent className="p-5 space-y-4">
                           {!news && <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-[#FF7F11]" /></div>}
                           {displayNews.map((n: any, i) => (
-                            <a key={i} href={n.link || '#'} target="_blank" rel="noreferrer" className="block group">
-                               <p className="text-xs font-black text-gray-900 uppercase group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">{n.title}</p>
-                               <p className="text-[9px] text-gray-400 font-bold my-1 uppercase">{n.date} · {n.author}</p>
-                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
-                               {i < displayNews.length - 1 && <div className="h-px bg-gray-100 mt-3" />}
-                            </a>
+                             <a key={i} href={n.link || '#'} target="_blank" rel="noreferrer" className="block group">
+                                <p className="text-xs font-black text-gray-900 uppercase group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">{n.title}</p>
+                                <p className="text-[9px] text-gray-400 font-bold my-1 uppercase">{n.date} · {n.author}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
+                                {i < displayNews.length - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                             </a>
                           ))}
                        </CardContent>
                     </Card>
@@ -406,8 +406,8 @@ export function Dashboard() {
                             </>
                           ) : (
                             <div className="flex flex-col items-center justify-center py-8 gap-2">
-                              <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-                              <p className="text-[10px] text-gray-500 uppercase tracking-widest">Fetching conditions...</p>
+                               <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+                               <p className="text-[10px] text-gray-500 uppercase tracking-widest">Fetching conditions...</p>
                             </div>
                           )}
                        </CardContent>
@@ -419,6 +419,7 @@ export function Dashboard() {
 
         {user?.role === 'admin' && (
            <div className="space-y-8">
+              {/* Stats Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                  {stats.map((stat, i) => (
                    <Card key={i} className="rounded-3xl border-none shadow-lg bg-white p-6 group hover:bg-[#FF7F11] transition-all duration-300">
@@ -430,43 +431,102 @@ export function Dashboard() {
                    </Card>
                  ))}
               </div>
-              
-              <Card className="rounded-[2.5rem] border-none shadow-xl bg-white overflow-hidden">
-                 <CardHeader className="bg-gray-50/50 p-6 border-b border-gray-100 flex flex-row items-center justify-between">
-                    <CardTitle className="text-xs font-black uppercase tracking-widest">Active Enrollment Feed</CardTitle>
-                    <Link to="/students" className="text-[10px] font-black text-[#FF7F11] uppercase tracking-widest">View Directory</Link>
-                 </CardHeader>
-                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                       <tbody className="divide-y divide-gray-50">
-                          {students.slice(0, 5).map(s => (
-                            <tr key={s.id} className="hover:bg-gray-50 transition-colors">
-                               <td className="px-6 py-4">
-                                  <div className="flex items-center gap-3">
-                                     <div className="w-8 h-8 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center font-black text-[10px] uppercase">{s.firstName[0]}{s.lastName[0]}</div>
-                                     <div>
-                                        <p className="text-xs font-black text-gray-800 uppercase tracking-tight">{s.firstName} {s.lastName}</p>
-                                        <p className="text-[9px] text-gray-400 font-bold uppercase">{s.program}</p>
-                                     </div>
-                                  </div>
-                               </td>
-                               <td className="px-6 py-4 text-center">
-                                  <span className="text-[10px] font-black text-gray-900 uppercase">GPA {s.gpa.toFixed(2)}</span>
-                                </td>
-                               <td className="px-6 py-4 text-right">
-                                  {s.classification === 'Irregular' && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black uppercase rounded border border-amber-200">IRREG</span>}
-                               </td>
-                            </tr>
-                          ))}
-                          {students.length === 0 && (
-                            <tr>
-                               <td colSpan={3} className="px-6 py-8 text-center text-gray-400 text-xs italic">No enrolled students found.</td>
-                            </tr>
-                          )}
-                       </tbody>
-                    </table>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                 {/* Left Column: Enrollment Feed (2/3 width) */}
+                 <div className="lg:col-span-2 space-y-6">
+                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-white overflow-hidden">
+                       <CardHeader className="bg-gray-50/50 p-6 border-b border-gray-100 flex flex-row items-center justify-between">
+                          <CardTitle className="text-xs font-black uppercase tracking-widest">Active Enrollment Feed</CardTitle>
+                          <Link to="/students" className="text-[10px] font-black text-[#FF7F11] uppercase tracking-widest">View Directory</Link>
+                       </CardHeader>
+                       <div className="overflow-x-auto">
+                          <table className="w-full text-left">
+                             <tbody className="divide-y divide-gray-50">
+                                {students.slice(0, 8).map(s => (
+                                   <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                                      <td className="px-6 py-4">
+                                         <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center font-black text-[10px] uppercase">{s.firstName[0]}{s.lastName[0]}</div>
+                                            <div>
+                                               <p className="text-xs font-black text-gray-800 uppercase tracking-tight">{s.firstName} {s.lastName}</p>
+                                               <p className="text-[9px] text-gray-400 font-bold uppercase">{s.program}</p>
+                                            </div>
+                                         </div>
+                                      </td>
+                                      <td className="px-6 py-4 text-center">
+                                         <span className="text-[10px] font-black text-gray-900 uppercase">GPA {s.gpa.toFixed(2)}</span>
+                                       </td>
+                                      <td className="px-6 py-4 text-right">
+                                         {s.classification === 'Irregular' && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black uppercase rounded border border-amber-200">IRREG</span>}
+                                      </td>
+                                   </tr>
+                                ))}
+                                {students.length === 0 && (
+                                   <tr>
+                                      <td colSpan={3} className="px-6 py-8 text-center text-gray-400 text-xs italic">No enrolled students found.</td>
+                                   </tr>
+                                )}
+                             </tbody>
+                          </table>
+                       </div>
+                    </Card>
                  </div>
-              </Card>
+
+                 {/* Right Column: News + Weather (1/3 width) */}
+                 <div className="lg:col-span-1 space-y-6">
+                    {/* Latest News */}
+                    <Card className="rounded-[2rem] border-none shadow-xl bg-white overflow-hidden">
+                       <CardHeader className="bg-gray-50/50 p-5 border-b border-gray-100">
+                          <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                             <Megaphone className="w-4 h-4 text-sky-500" /> Latest News
+                          </CardTitle>
+                       </CardHeader>
+                       <CardContent className="p-5 space-y-4">
+                          {!news && <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-[#FF7F11]" /></div>}
+                          {displayNews.map((n: any, i) => (
+                            <a key={i} href={n.link || '#'} target="_blank" rel="noreferrer" className="block group">
+                               <p className="text-xs font-black text-gray-900 uppercase group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">{n.title}</p>
+                               <p className="text-[9px] text-gray-400 font-bold my-1 uppercase">{n.date} · {n.author}</p>
+                               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{n.content}</p>
+                               {i < displayNews.length - 1 && <div className="h-px bg-gray-100 mt-3" />}
+                            </a>
+                          ))}
+                       </CardContent>
+                    </Card>
+
+                    {/* Live Weather */}
+                    <Card className="rounded-[2.5rem] border-none shadow-xl bg-gray-900 text-white overflow-hidden relative">
+                       <div className="absolute inset-0 bg-gradient-to-br from-sky-900/50 to-gray-900 pointer-events-none" />
+                       <CardContent className="p-6 relative z-10">
+                          <p className="text-sky-400 text-[10px] font-black uppercase tracking-widest mb-1">Live Weather</p>
+                          <p className="text-white font-black text-lg uppercase tracking-tight">Cabuyao City, PH</p>
+                          {weather ? (
+                            <>
+                              <div className="flex items-center justify-between mt-4">
+                                 <div>
+                                    <p className="text-5xl font-black tracking-tighter">{Math.round(weather.main.temp)}°C</p>
+                                    <p className="text-gray-400 text-xs uppercase tracking-wider mt-1 capitalize">{weather.weather[0].description}</p>
+                                 </div>
+                                 <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} alt="weather icon" className="w-16 h-16 opacity-90" />
+                              </div>
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 border-t border-white/10 pt-4 text-white">
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Feels Like</p><p className="text-sm font-bold">{Math.round(weather.main.feels_like)}°C</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Humidity</p><p className="text-sm font-bold">{weather.main.humidity}%</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Wind</p><p className="text-sm font-bold">{weather.wind?.speed} m/s</p></div>
+                                 <div><p className="text-[9px] text-gray-500 uppercase mb-0.5">Pressure</p><p className="text-sm font-bold">{weather.main.pressure} hPa</p></div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-8 gap-2">
+                               <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+                               <p className="text-[10px] text-gray-500 uppercase tracking-widest">Fetching conditions...</p>
+                            </div>
+                          )}
+                       </CardContent>
+                    </Card>
+                 </div>
+              </div>
            </div>
         )}
       </div>
