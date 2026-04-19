@@ -19,7 +19,27 @@ class TaskController extends Controller
             ->where('due_date', '<', now())
             ->update(['status' => 'Closed']);
 
-        $tasks = Task::with('faculty')->latest()->get();
+        $user = Auth::user();
+
+        // Faculty and Admin see all tasks
+        if ($user->role === 'faculty' || $user->role === 'admin') {
+            $tasks = Task::with('faculty')->latest()->get();
+            return response()->json(['data' => $tasks]);
+        }
+
+        // Students only see tasks for their enrolled section
+        $student = \App\Models\Student::where('email', $user->email)->first();
+
+        // If no student record, or not enrolled (no section), return empty
+        if (!$student || empty($student->section) || empty($student->enrollment_date)) {
+            return response()->json(['data' => []]);
+        }
+
+        $tasks = Task::with('faculty')
+            ->where('section', $student->section)
+            ->latest()
+            ->get();
+
         return response()->json(['data' => $tasks]);
     }
 
