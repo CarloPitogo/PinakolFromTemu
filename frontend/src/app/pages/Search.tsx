@@ -30,6 +30,7 @@ import { Link } from 'react-router';
 import { fetchWithAuth } from '../context/AuthContext';
 import { PaginationControls } from '../components/ui/pagination-controls';
 import { useCallback } from 'react';
+import { cn } from '../components/ui/utils';
 
 export function Search() {
   // Advanced Filters
@@ -520,7 +521,9 @@ export function Search() {
                           Updating results...
                         </span>
                       ) : (
-                        `${filteredStudents.length} student${filteredStudents.length !== 1 ? 's' : ''} found`
+                        <span className="font-sans font-medium">
+                          Found <span className="text-[#FF7F11] font-bold">{paginationMeta.total}</span> matching student{paginationMeta.total !== 1 ? 's' : ''}
+                        </span>
                       )}
                     </p>
                   </div>
@@ -568,49 +571,62 @@ export function Search() {
 }
 
 function ResultCard({ student, searchSkills, searchSports }: { student: Student, searchSkills: string[], searchSports: string[] }) {
-  // Check for similar matches (fuzzy logic mirror in frontend for UI display)
   const isSimilarityMatch = searchSkills.length > 0 && !searchSkills.every(s => student.technicalSkills.includes(s));
   
-  // Find which skill actually matched (or is similar)
-  const matchingSkills = student.technicalSkills.filter(skill => 
-    searchSkills.some(s => s === skill || skill.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(skill.toLowerCase()))
-  );
+  // Dynamic color for avatar based on name
+  const colors = [
+    'from-blue-500 to-indigo-600',
+    'from-[#FF7F11] to-orange-600',
+    'from-emerald-500 to-teal-600',
+    'from-purple-500 to-pink-600',
+    'from-rose-500 to-red-600'
+  ];
+  const colorIndex = (student.firstName.length + student.lastName.length) % colors.length;
+  const avatarGradient = colors[colorIndex];
 
   return (
-    <div className="p-4 border rounded-lg hover:shadow-sm transition-shadow bg-white">
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#FF7F11] to-orange-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
-            {student.firstName[0]}{student.lastName[0]}
+    <div className="p-5 border border-gray-100 rounded-[1.5rem] hover:shadow-xl transition-all duration-300 bg-white group relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-500 opacity-50" />
+      
+      <div className="flex items-start justify-between relative z-10">
+        <div className="flex items-start gap-5 flex-1">
+          <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg transform group-hover:rotate-3 transition-transform bg-gradient-to-br", avatarGradient)}>
+            <span className="text-xl tracking-tighter">{student.firstName[0]}{student.lastName[0]}</span>
           </div>
+          
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Link to={`/students/${student.id}`}>
-                <h4 className="font-semibold text-gray-900 hover:text-[#FF7F11] transition-colors">
+            <div className="flex items-center gap-3 mb-2">
+              <Link to={`/students/${student.id}`} className="block">
+                <h4 className="text-lg font-black text-gray-900 group-hover:text-[#FF7F11] transition-colors leading-tight">
                   {student.firstName} {student.lastName}
                 </h4>
               </Link>
-              <Badge variant="outline" className="text-xs font-mono">{student.studentNumber}</Badge>
+              <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-gray-100 text-gray-400 py-0.5">
+                {student.studentNumber}
+              </Badge>
               {isSimilarityMatch && (
-                <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px] py-0 h-5 px-2">
-                  Similarity Match
+                <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] font-bold py-0 h-5 px-2">
+                  Matching Partner
                 </Badge>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mb-2">
-              <div>
-                <span className="text-gray-500">Program:</span>
-                <span className="ml-1 text-gray-900">{student.program} (Yr {student.yearLevel})</span>
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 font-bold uppercase tracking-widest">Program</span>
+                <span className="text-gray-900 font-black">{student.program}</span>
               </div>
-              <div>
-                <span className="text-gray-500">GPA:</span>
-                <span className="ml-1 font-semibold text-blue-600">{student.gpa.toFixed(2)}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 font-bold uppercase tracking-widest">Enrollment</span>
+                <span className="text-gray-900 font-black">Year {student.yearLevel}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 font-bold uppercase tracking-widest">Rating</span>
+                <span className="text-blue-600 font-black px-2 py-0.5 bg-blue-50 rounded-lg">{student.gpa.toFixed(2)} GPA</span>
               </div>
             </div>
 
-            {/* Skills Preview */}
-            <div className="flex flex-wrap gap-1 mb-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {student.technicalSkills.map(skill => {
                 const isMatch = searchSkills.includes(skill);
                 const isFuzzy = !isMatch && searchSkills.some(s => skill.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(skill.toLowerCase()));
@@ -618,8 +634,14 @@ function ResultCard({ student, searchSkills, searchSports }: { student: Student,
                 return (
                   <Badge 
                     key={skill} 
-                    variant={isMatch ? "default" : "outline"} 
-                    className={`text-xs ${isMatch ? 'bg-[#FF7F11] text-white' : isFuzzy ? 'border-amber-400 text-amber-700 bg-amber-50' : ''}`}
+                    className={cn(
+                      "text-[10px] font-bold py-1 px-3 rounded-xl transition-all",
+                      isMatch 
+                        ? 'bg-gray-900 text-white shadow-md scale-105' 
+                        : isFuzzy 
+                          ? 'border-orange-400 text-orange-700 bg-orange-50' 
+                          : 'bg-gray-100 text-gray-500 border-none hover:bg-gray-200'
+                    )}
                   >
                     {skill}
                   </Badge>
@@ -627,18 +649,20 @@ function ResultCard({ student, searchSkills, searchSports }: { student: Student,
               })}
             </div>
 
-            {/* Sports Preview */}
             {student.sportsSkills.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1.5 border-t border-gray-50 pt-3">
                 {student.sportsSkills.map((ss, idx) => {
                   const isMatch = searchSports.includes(ss.sport);
                   return (
-                    <Badge
-                      key={idx}
-                      className={isMatch ? 'bg-indigo-600 text-white' : (ss.level === 'Varsity' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700')}
-                    >
-                      {ss.sport} ({ss.level})
-                    </Badge>
+                    <div key={idx} className={cn(
+                      "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
+                      isMatch ? 'bg-indigo-600 text-white' : 'bg-gray-50 text-gray-400'
+                    )}>
+                      <Trophy className="w-2.5 h-2.5" />
+                      {ss.sport}
+                      <span className="opacity-50">•</span>
+                      {ss.level}
+                    </div>
                   );
                 })}
               </div>
@@ -646,9 +670,9 @@ function ResultCard({ student, searchSkills, searchSports }: { student: Student,
           </div>
         </div>
 
-        <Link to={`/students/${student.id}`}>
-          <Button variant="outline" size="sm" className="hover:border-[#FF7F11] hover:text-[#FF7F11]">
-            View Profile
+        <Link to={`/students/${student.id}`} className="hidden md:block">
+          <Button variant="outline" className="rounded-xl border-gray-100 font-bold text-xs hover:border-[#FF7F11] hover:text-[#FF7F11] hover:bg-orange-50 transition-all">
+            Profile Details
           </Button>
         </Link>
       </div>
