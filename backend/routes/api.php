@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
 
+Route::get('/login', function () {
+    return response()->json(['message' => 'Please authenticate via POST.'], 401);
+})->name('login');
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
@@ -18,7 +22,11 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\GradeController;
 
+use App\Http\Controllers\DashboardController;
+
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/update-password', [AuthController::class, 'updatePassword']);
     Route::put('/update-profile', [AuthController::class, 'updateProfile']);

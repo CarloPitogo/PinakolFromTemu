@@ -131,13 +131,45 @@ export function Search() {
     setHasViolations('all');
   };
 
-  const generateReport = () => {
-    if (filteredStudents.length === 0) {
+  const generateReport = async () => {
+    const fetchFullReportData = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (minGPA) params.append('minGPA', minGPA);
+        if (maxGPA) params.append('maxGPA', maxGPA);
+        if (selectedProgram !== 'All') params.append('program', selectedProgram);
+        if (selectedYearLevel !== 'All') params.append('yearLevel', selectedYearLevel);
+        if (hasViolations !== 'all') params.append('hasViolations', hasViolations);
+        if (minHeight) params.append('minHeight', minHeight);
+        
+        params.append('perPage', '-1'); // Special flag for all records
+
+        selectedSkills.forEach(skill => params.append('skills[]', skill));
+        selectedSports.forEach(sport => params.append('sports[]', sport));
+
+        const response = await fetchWithAuth(`/students?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch report data');
+        const result = await response.json();
+        
+        // Handle both paginated and non-paginated responses just in case
+        return Array.isArray(result) ? result : result.data || [];
+      } catch (error) {
+        console.error('Report fetch error:', error);
+        return [];
+      }
+    };
+
+    const reportToastId = toast.loading('Preparing full report data...');
+    const allFilteredStudents = await fetchFullReportData();
+    toast.dismiss(reportToastId);
+
+    if (allFilteredStudents.length === 0) {
       toast.error('No students found to generate report');
       return;
     }
 
-    const doc = new jsPDF();
+    try {
+      const doc = new jsPDF();
 
     // Add Header
     doc.setFontSize(22);
@@ -152,11 +184,11 @@ export function Search() {
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 38);
     doc.text(`Applied Filters: ${selectedProgram} Program, Year ${selectedYearLevel}, Min GPA: ${minGPA || 'N/A'}`, 14, 44);
-    doc.text(`Total Records Found: ${filteredStudents.length}`, 14, 50);
+    doc.text(`Total Records Found: ${allFilteredStudents.length}`, 14, 50);
 
     // Prepare table data
     const tableColumn = ["Full Name", "Student ID", "Program", "Year", "GPA", "Status", "Skills Preview"];
-    const tableRows = filteredStudents.map(student => [
+    const tableRows = allFilteredStudents.map((student: Student) => [
       `${student.firstName} ${student.lastName}`,
       student.studentNumber,
       student.program,
@@ -177,18 +209,17 @@ export function Search() {
       styles: { fontSize: 9 }
     });
 
-    const fileName = `CCS_Report_2026.pdf`;
+      const fileName = `CCS_Report_2026.pdf`;
 
-    // Using a Data URI as a fallback which can be more reliable for naming in some contexts
-    const pdfData = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfData;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Use doc.save() to trigger the proper download through jsPDF natively
+      // This properly attaches the .pdf extension and name, unlike raw blob clicks
+      doc.save(fileName);
 
-    toast.success(`PDF report exported successfully: ${fileName}`);
+      toast.success(`PDF report exported successfully: ${fileName}`);
+    } catch (error: any) {
+      console.error("PDF Generation Error:", error);
+      toast.error(`Failed to generate PDF: ${error.message || 'Unknown error'}`);
+    }
   };
 
   // Pre-defined report templates

@@ -28,7 +28,7 @@ export function Attendance() {
   useEffect(() => {
     const loadStudents = async () => {
       try {
-        const response = await fetchWithAuth('/students');
+        const response = await fetchWithAuth('/students?perPage=-1');
         if (!response.ok) throw new Error('Failed to fetch students');
         const data = await response.json();
         setStudents(data.data || []);
@@ -80,7 +80,8 @@ export function Attendance() {
       return;
     }
 
-    const doc = new jsPDF();
+    try {
+      const doc = new jsPDF();
     
     // Header
     doc.setFontSize(22);
@@ -146,18 +147,15 @@ export function Attendance() {
       styles: { fontSize: 9 }
     });
     
-    const fileName = `Attendance_Summary_${selectedDate}.pdf`;
-    
-    // Using a Data URI as a fallback which can be more reliable for naming in some contexts
-    const pdfData = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfData;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success(`Attendance report exported successfully: ${fileName}`);
+      const fileName = `Attendance_Summary_${selectedDate}.pdf`;
+      
+      doc.save(fileName);
+      
+      toast.success(`Attendance report exported successfully: ${fileName}`);
+    } catch (error: any) {
+      console.error("PDF Generation Error:", error);
+      toast.error(`Failed to generate PDF: ${error.message || 'Unknown error'}`);
+    }
   };
 
   return (

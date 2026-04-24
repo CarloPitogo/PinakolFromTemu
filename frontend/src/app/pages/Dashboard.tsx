@@ -35,6 +35,7 @@ export function Dashboard() {
   const [news, setNews] = useState<any[] | null>(null);
   const [weather, setWeather] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [systemStats, setSystemStats] = useState({ students: 0, faculty: 0, sections: 0, avg_gpa: 0 });
 
   useEffect(() => {
     const fetchExternalData = async () => {
@@ -65,12 +66,13 @@ export function Dashboard() {
   useEffect(() => {
     const loadData = async () => {
       try {
-         const [stuRes, schRes, facRes, crsRes, annRes] = await Promise.all([
+         const [stuRes, schRes, facRes, crsRes, annRes, statsRes] = await Promise.all([
            fetchWithAuth('/students'),
            fetchWithAuth('/schedules'),
            fetchWithAuth('/faculty'),
            fetchWithAuth('/courses'),
-           fetchWithAuth('/announcements')
+           fetchWithAuth('/announcements'),
+           fetchWithAuth('/dashboard/stats')
          ]);
          
          const stu = stuRes.ok ? await stuRes.json() : { data: [] };
@@ -78,12 +80,14 @@ export function Dashboard() {
          const fac = facRes.ok ? await facRes.json() : { data: [] };
          const crs = crsRes.ok ? await crsRes.json() : { data: [] };
          const ann = annRes.ok ? await annRes.json() : [];
+         const statsData = statsRes.ok ? await statsRes.json() : { students: 0, faculty: 0, sections: 0, avg_gpa: 0 };
 
         setStudents(stu.data || []);
         setSchedules(sch.data || []);
         setFaculty(fac.data || []);
         setCourses(crs.data || []);
         setAnnouncements(Array.isArray(ann) ? ann : ann.data || []);
+        setSystemStats(statsData);
       } catch (error) {
         console.error('Data error:', error);
       } finally {
@@ -110,10 +114,10 @@ export function Dashboard() {
   }, [currentFaculty, schedules]);
 
   const stats = [
-    { title: "Students", value: students.length, icon: Users, color: "blue" },
-    { title: "Faculty", value: faculty.length, icon: GraduationCap, color: "green" },
-    { title: "Sections", value: new Set(schedules.map(s => s.section)).size, icon: Award, color: "purple" },
-    { title: "Avg. GPA", value: students.length > 0 ? (students.reduce((sum, s) => sum + s.gpa, 0) / students.length).toFixed(2) : "0.00", icon: TrendingUp, color: "orange" },
+    { title: "Students", value: systemStats.students, icon: Users, color: "blue" },
+    { title: "Faculty", value: systemStats.faculty, icon: GraduationCap, color: "green" },
+    { title: "Sections", value: systemStats.sections, icon: Award, color: "purple" },
+    { title: "Avg. GPA", value: systemStats.avg_gpa.toFixed(2), icon: TrendingUp, color: "orange" },
   ];
 
   const fallbackNews = [

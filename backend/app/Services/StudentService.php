@@ -130,6 +130,10 @@ class StudentService
             });
         }
 
+        if (isset($filters['perPage']) && (int)$filters['perPage'] === -1) {
+            return $query->latest()->get();
+        }
+
         return $query->latest()->paginate($filters['perPage'] ?? 15);
     }
 
