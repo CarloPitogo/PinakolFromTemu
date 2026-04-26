@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Courses & Instruction API
     Route::apiResource('courses', CourseController::class);
+    Route::patch('courses/{course}/toggle-status', [CourseController::class, 'toggleStatus']);
     Route::apiResource('syllabi', SyllabusController::class);
 
     // Scheduling API

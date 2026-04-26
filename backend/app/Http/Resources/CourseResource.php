@@ -18,6 +18,7 @@ class CourseResource extends JsonResource
             'program' => $this->program,
             'yearLevel' => $this->year_level,
             'semester' => $this->semester,
+            'isActive' => $this->is_active,
         ];
     }
 }

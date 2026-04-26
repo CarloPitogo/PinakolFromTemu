@@ -26,15 +26,16 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            StudentSeeder::class,
-            FacultySeeder::class,
-            FacultyUserSeeder::class,
-            StudentUserSeeder::class,
-            CourseSeeder::class,
-            SyllabusSeeder::class,
-            ScheduleSeeder::class,
-            EventSeeder::class,
-            AnnouncementSeeder::class,
+            StudentSeeder::class ,
+            FacultySeeder::class ,
+            FacultyUserSeeder::class ,
+            StudentUserSeeder::class ,
+            CourseSeeder::class ,
+            SyllabusSeeder::class ,
+            ScheduleSeeder::class ,
+            EventSeeder::class ,
+            AnnouncementSeeder::class ,
+            MassStudentSeeder::class ,
         ]);
     }
 }

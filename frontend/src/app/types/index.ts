@@ -108,6 +108,7 @@ export interface Course {
   program: string;
   yearLevel: number;
   semester: string;
+  isActive?: boolean;
 }
 
 export interface Syllabus {
@@ -115,6 +116,7 @@ export interface Syllabus {
   courseCode: string;
   courseName: string;
   facultyId: string;
+  facultyName?: string;
   semester: string;
   description: string;
   objectives: string[];
