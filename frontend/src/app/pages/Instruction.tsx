@@ -137,8 +137,8 @@ export function Instruction() {
     }
   };
 
-  const bscsCourses = useMemo(() => courses.filter(c => c.program === 'Bachelor of Science in Computer Science'), [courses]);
-  const bsitCourses = useMemo(() => courses.filter(c => c.program === 'Bachelor of Science in Information Technology'), [courses]);
+  const bscsCourses = useMemo(() => courses.filter(c => c.program === 'Bachelor of Science in Computer Science' && c.isActive), [courses]);
+  const bsitCourses = useMemo(() => courses.filter(c => c.program === 'Bachelor of Science in Information Technology' && c.isActive), [courses]);
 
   const calcProgramStats = (progCourses: Course[]) => {
     return {
@@ -396,7 +396,7 @@ export function Instruction() {
                 {/* BS Computer Science */}
                 <div>
                   <h3 className="font-black text-xl text-gray-900 mb-4 uppercase tracking-tight border-b pb-2">Bachelor of Science in Computer Science</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div className="p-6 bg-blue-50/50 border border-blue-100 rounded-2xl flex flex-col items-center justify-center text-center">
                       <p className="text-[10px] uppercase font-black tracking-widest text-blue-500 mb-2">Total Units</p>
                       <p className="text-4xl font-black text-blue-700">{calcProgramStats(bscsCourses).totalUnits}</p>
@@ -409,6 +409,14 @@ export function Instruction() {
                       <p className="text-[10px] uppercase font-black tracking-widest text-sky-500 mb-2">1st Year Courses</p>
                       <p className="text-3xl font-black text-sky-700">{bscsCourses.filter(c => c.yearLevel === 1).length}</p>
                     </div>
+                    <div className="p-6 bg-teal-50/50 border border-teal-100 rounded-2xl flex flex-col items-center justify-center text-center">
+                      <p className="text-[10px] uppercase font-black tracking-widest text-teal-600 mb-2">2nd Year Courses</p>
+                      <p className="text-3xl font-black text-teal-700">{bscsCourses.filter(c => c.yearLevel === 2).length}</p>
+                    </div>
+                    <div className="p-6 bg-violet-50/50 border border-violet-100 rounded-2xl flex flex-col items-center justify-center text-center">
+                      <p className="text-[10px] uppercase font-black tracking-widest text-violet-500 mb-2">3rd Year Courses</p>
+                      <p className="text-3xl font-black text-violet-700">{bscsCourses.filter(c => c.yearLevel === 3).length}</p>
+                    </div>
                     <div className="p-6 bg-cyan-50/50 border border-cyan-100 rounded-2xl flex flex-col items-center justify-center text-center">
                       <p className="text-[10px] uppercase font-black tracking-widest text-cyan-500 mb-2">4th Year Courses</p>
                       <p className="text-3xl font-black text-cyan-700">{bscsCourses.filter(c => c.yearLevel === 4).length}</p>
@@ -419,7 +427,7 @@ export function Instruction() {
                 {/* BS Information Technology */}
                 <div>
                   <h3 className="font-black text-xl text-gray-900 mb-4 uppercase tracking-tight border-b pb-2">Bachelor of Science in Information Technology</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div className="p-6 bg-orange-50/50 border border-orange-100 rounded-2xl flex flex-col items-center justify-center text-center">
                       <p className="text-[10px] uppercase font-black tracking-widest text-orange-500 mb-2">Total Units</p>
                       <p className="text-4xl font-black text-orange-700">{calcProgramStats(bsitCourses).totalUnits}</p>
@@ -431,6 +439,14 @@ export function Instruction() {
                     <div className="p-6 bg-amber-50/50 border border-amber-100 rounded-2xl flex flex-col items-center justify-center text-center">
                       <p className="text-[10px] uppercase font-black tracking-widest text-amber-500 mb-2">1st Year Courses</p>
                       <p className="text-3xl font-black text-amber-700">{bsitCourses.filter(c => c.yearLevel === 1).length}</p>
+                    </div>
+                    <div className="p-6 bg-rose-50/50 border border-rose-100 rounded-2xl flex flex-col items-center justify-center text-center">
+                      <p className="text-[10px] uppercase font-black tracking-widest text-rose-500 mb-2">2nd Year Courses</p>
+                      <p className="text-3xl font-black text-rose-700">{bsitCourses.filter(c => c.yearLevel === 2).length}</p>
+                    </div>
+                    <div className="p-6 bg-pink-50/50 border border-pink-100 rounded-2xl flex flex-col items-center justify-center text-center">
+                      <p className="text-[10px] uppercase font-black tracking-widest text-pink-500 mb-2">3rd Year Courses</p>
+                      <p className="text-3xl font-black text-pink-700">{bsitCourses.filter(c => c.yearLevel === 3).length}</p>
                     </div>
                     <div className="p-6 bg-yellow-50/50 border border-yellow-100 rounded-2xl flex flex-col items-center justify-center text-center">
                       <p className="text-[10px] uppercase font-black tracking-widest text-yellow-600 mb-2">4th Year Courses</p>
