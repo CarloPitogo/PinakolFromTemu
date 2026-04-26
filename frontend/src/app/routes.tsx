@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { Dashboard } from "./pages/Dashboard";
 import { Students } from "./pages/Students";
 import { StudentProfile } from "./pages/StudentProfile";
@@ -23,6 +23,10 @@ import { ProtectedLayout } from "./components/ProtectedLayout";
 
 export const router = createBrowserRouter([
   {
+    path: "/",
+    element: <Navigate to="/login" replace />,
+  },
+  {
     path: "/login",
     Component: Login,
   },
@@ -31,7 +35,7 @@ export const router = createBrowserRouter([
     Component: Register,
   },
   {
-    path: "/",
+    path: "/dashboard",
     Component: ProtectedLayout,
     children: [
       { index: true, Component: Dashboard },
@@ -53,5 +57,9 @@ export const router = createBrowserRouter([
       { path: "search", Component: Search },
       { path: "logs", Component: SystemLogs },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/login" replace />,
   },
 ]);

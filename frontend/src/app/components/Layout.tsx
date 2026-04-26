@@ -32,22 +32,22 @@ import { toast } from "sonner";
 import { Schedule, Student, Faculty } from "../types";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ['admin', 'faculty', 'student'] },
-  { name: "My Schedule", href: "/my-schedule", icon: Clock, roles: ['student'] },
-  { name: "My Subjects", href: "/my-subjects", icon: BookMarked, roles: ['student'], hasDropdown: true },
-  { name: "Reg Form", href: "/reg-form", icon: FileText, roles: ['student'] },
-  { name: "My Grades", href: "/my-grades", icon: BarChart2, roles: ['student'] },
-  { name: "Assignments", href: "/assignments", icon: ClipboardList, roles: ['student'] },
-  { name: "My Classes", href: "/my-classes", icon: Presentation, roles: ['faculty'], hasDropdown: true },
-  { name: "Students", href: "/students", icon: Users, roles: ['admin'] },
-  { name: "Faculty", href: "/faculty", icon: UserCog, roles: ['admin'] },
-  { name: "Instruction", href: "/instruction", icon: BookOpen, roles: ['admin'] },
-  { name: "Scheduling", href: "/scheduling", icon: Calendar, roles: ['admin', 'faculty'] },
-  { name: "Announcements", href: "/announcements", icon: Megaphone, roles: ['admin', 'faculty', 'student'] },
-  { name: "Events", href: "/events", icon: PartyPopper, roles: ['admin', 'faculty', 'student'] },
-  { name: "Search & Reports", href: "/search", icon: SearchIcon, roles: ['admin'] },
-  { name: "System Logs", href: "/logs", icon: LogsIcon, roles: ['admin'] },
-  { name: "My Profile", href: "/profile", icon: User, roles: ['student', 'faculty'] },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ['admin', 'faculty', 'student'] },
+  { name: "My Schedule", href: "/dashboard/my-schedule", icon: Clock, roles: ['student'] },
+  { name: "My Subjects", href: "/dashboard/my-subjects", icon: BookMarked, roles: ['student'], hasDropdown: true },
+  { name: "Reg Form", href: "/dashboard/reg-form", icon: FileText, roles: ['student'] },
+  { name: "My Grades", href: "/dashboard/my-grades", icon: BarChart2, roles: ['student'] },
+  { name: "Assignments", href: "/dashboard/assignments", icon: ClipboardList, roles: ['student'] },
+  { name: "My Classes", href: "/dashboard/my-classes", icon: Presentation, roles: ['faculty'], hasDropdown: true },
+  { name: "Students", href: "/dashboard/students", icon: Users, roles: ['admin'] },
+  { name: "Faculty", href: "/dashboard/faculty", icon: UserCog, roles: ['admin'] },
+  { name: "Instruction", href: "/dashboard/instruction", icon: BookOpen, roles: ['admin'] },
+  { name: "Scheduling", href: "/dashboard/scheduling", icon: Calendar, roles: ['admin', 'faculty'] },
+  { name: "Announcements", href: "/dashboard/announcements", icon: Megaphone, roles: ['admin', 'faculty', 'student'] },
+  { name: "Events", href: "/dashboard/events", icon: PartyPopper, roles: ['admin', 'faculty', 'student'] },
+  { name: "Search & Reports", href: "/dashboard/search", icon: SearchIcon, roles: ['admin'] },
+  { name: "System Logs", href: "/dashboard/logs", icon: LogsIcon, roles: ['admin'] },
+  { name: "My Profile", href: "/dashboard/profile", icon: User, roles: ['student', 'faculty'] },
 ];
 
 export function Layout() {
@@ -197,7 +197,7 @@ export function Layout() {
                       {item.name === "My Subjects" && studentSubjects.map(sub => (
                         <Link
                           key={sub.code}
-                          to={`/subjects/${sub.code}`}
+                          to={`/dashboard/subjects/${sub.code}`}
                           className="flex items-center gap-2 py-1.5 text-[10px] font-bold text-orange-100/70 hover:text-white transition-colors truncate"
                         >
                           <Book className="w-3 h-3 flex-shrink-0" />
@@ -207,7 +207,7 @@ export function Layout() {
                       {item.name === "My Classes" && facultyClasses.map((cls, idx) => (
                         <Link
                           key={idx}
-                          to={`/subjects/${cls.courseCode}?section=${encodeURIComponent(cls.section)}`}
+                          to={`/dashboard/subjects/${cls.courseCode}?section=${encodeURIComponent(cls.section)}`}
                           className="flex items-center gap-2 py-1.5 text-[10px] font-bold text-orange-100/70 hover:text-white transition-colors truncate"
                         >
                           <Presentation className="w-3 h-3 flex-shrink-0" />

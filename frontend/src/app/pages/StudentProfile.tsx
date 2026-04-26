@@ -52,7 +52,7 @@ export function StudentProfile() {
       
       if (response.ok) {
         toast.success("Student profile deleted successfully.");
-        navigate('/students');
+        navigate('/dashboard/students');
       } else {
         toast.error("Failed to delete student profile.");
       }
@@ -70,7 +70,7 @@ export function StudentProfile() {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-gray-900">Student not found</h2>
-        <Link to="/students">
+        <Link to="/dashboard/students">
           <Button className="mt-4">Back to Students</Button>
         </Link>
       </div>
@@ -82,7 +82,7 @@ export function StudentProfile() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/students">
+          <Link to="/dashboard/students">
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back

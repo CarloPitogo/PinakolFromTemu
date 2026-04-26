@@ -21,7 +21,7 @@ export function Login() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +32,7 @@ export function Login() {
     try {
       await login(email, password);
       toast.success('Welcome back!');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError('Invalid email or password');
       toast.error('Invalid email or password');
