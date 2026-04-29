@@ -108,7 +108,7 @@ export function MySubjects() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredSubjects.map((sub, idx) => (
-          <Link key={idx} to={`/subjects/${sub.code}`} className="block">
+          <Link key={idx} to={`/dashboard/subjects/${sub.code}`} className="block">
           <Card className="border-none shadow-lg hover:shadow-xl transition-all rounded-2xl overflow-hidden group bg-white border-l-4 border-l-[#FF7F11] cursor-pointer">
             <CardContent className="p-0">
                <div className="p-6 pb-4">

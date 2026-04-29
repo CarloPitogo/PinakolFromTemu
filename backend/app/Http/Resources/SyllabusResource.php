@@ -14,6 +14,7 @@ class SyllabusResource extends JsonResource
             'courseCode' => $this->course_code,
             'courseName' => $this->course_name,
             'facultyId' => $this->faculty_id,
+            'facultyName' => $this->faculty ? ($this->faculty->first_name . ' ' . $this->faculty->last_name) : null,
             'semester' => $this->semester,
             'description' => $this->description,
             'objectives' => $this->objectives ?? [],

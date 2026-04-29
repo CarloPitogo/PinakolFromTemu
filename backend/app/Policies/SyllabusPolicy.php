@@ -29,7 +29,7 @@ class SyllabusPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->role === 'admin' || $user->role === 'faculty';
     }
 
     /**
@@ -37,7 +37,8 @@ class SyllabusPolicy
      */
     public function update(User $user, Syllabus $syllabus): bool
     {
-        return false;
+        // Actually usually faculty can only edit their own, but since role policy is simple we will stick to admin or faculty.
+        return $user->role === 'admin' || $user->role === 'faculty';
     }
 
     /**
@@ -45,7 +46,7 @@ class SyllabusPolicy
      */
     public function delete(User $user, Syllabus $syllabus): bool
     {
-        return false;
+        return $user->role === 'admin';
     }
 
     /**

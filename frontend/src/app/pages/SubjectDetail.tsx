@@ -348,7 +348,7 @@ export function SubjectDetail() {
              {user?.role === 'faculty' && (
                 <div className="flex gap-3">
                   <Link
-                    to={`/my-classes?course=${course.code}&section=${searchParams.get('section') || schedules[0]?.section || ''}`}
+                    to={`/dashboard/my-classes?course=${course.code}&section=${searchParams.get('section') || schedules[0]?.section || ''}`}
                     className="flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl px-6 h-14 font-black text-[10px] uppercase tracking-[0.2em] text-white transition-all shadow-xl"
                   >
                     <ClipboardList className="w-5 h-5 text-[#FF7F11]" />

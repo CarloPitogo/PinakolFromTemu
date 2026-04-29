@@ -17,5 +17,13 @@ class Course extends Model
         'program',
         'year_level',
         'semester',
+        'is_active',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
 }

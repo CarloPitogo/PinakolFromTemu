@@ -202,7 +202,7 @@ export function MySchedule() {
                         left: left,
                         width: columnWidth,
                       }}
-                      onClick={() => navigate(`/subjects/${sched.courseCode}`)}
+                      onClick={() => navigate(`/dashboard/subjects/${sched.courseCode}`)}
                     >
                       <div className={`h-full w-full flex flex-col items-center justify-center p-2 text-center text-white ${
                           sched.type === 'Laboratory'

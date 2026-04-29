@@ -232,7 +232,7 @@ export function Dashboard() {
                          </div>
                          <div className="space-y-4">
                             {mySubjects.slice(0, 6).map((sub, i) => (
-                               <Link key={i} to={`/subjects/${sub.courseCode}`} className="flex items-center justify-between group">
+                               <Link key={i} to={`/dashboard/subjects/${sub.courseCode}`} className="flex items-center justify-between group">
                                   <span className="text-xs font-black text-gray-500 group-hover:text-gray-900 transition-colors uppercase tracking-tight">{sub.courseCode}</span>
                                   <span className="text-[10px] text-gray-400 font-bold uppercase truncate max-w-[120px]">{sub.day} {sub.timeStart}</span>
                                   <ArrowRight className="w-3 h-3 text-gray-200 group-hover:text-[#FF7F11] group-hover:translate-x-1 transition-all" />
@@ -354,7 +354,7 @@ export function Dashboard() {
                        </div>
                        <div className="space-y-4">
                           {myClasses.map((cls, i) => (
-                             <Link key={i} to={`/my-classes?code=${cls.courseCode}&section=${cls.section}&tab=grades`} className="flex items-center justify-between group">
+                             <Link key={i} to={`/dashboard/my-classes?code=${cls.courseCode}&section=${cls.section}&tab=grades`} className="flex items-center justify-between group">
                                 <span className="text-xs font-black text-gray-500 group-hover:text-gray-900 transition-colors uppercase tracking-tight">{cls.courseCode} · {cls.section}</span>
                                 <ArrowRight className="w-3 h-3 text-gray-200 group-hover:text-[#FF7F11] group-hover:translate-x-1 transition-all" />
                              </Link>
@@ -442,7 +442,7 @@ export function Dashboard() {
                     <Card className="rounded-[2.5rem] border-none shadow-xl bg-white overflow-hidden">
                        <CardHeader className="bg-gray-50/50 p-6 border-b border-gray-100 flex flex-row items-center justify-between">
                           <CardTitle className="text-xs font-black uppercase tracking-widest">Active Enrollment Feed</CardTitle>
-                          <Link to="/students" className="text-[10px] font-black text-[#FF7F11] uppercase tracking-widest">View Directory</Link>
+                          <Link to="/dashboard/students" className="text-[10px] font-black text-[#FF7F11] uppercase tracking-widest">View Directory</Link>
                        </CardHeader>
                        <div className="overflow-x-auto">
                           <table className="w-full text-left">

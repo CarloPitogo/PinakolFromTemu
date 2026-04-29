@@ -14,15 +14,15 @@ export function ProtectedLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  const adminOnlyRoutes = ['/faculty', '/instruction', '/search', '/logs'];
-  const restrictedForStudents = ['/students', '/scheduling', ...adminOnlyRoutes];
+  const adminOnlyRoutes = ['/dashboard/faculty', '/dashboard/instruction', '/dashboard/search', '/dashboard/logs'];
+  const restrictedForStudents = ['/dashboard/students', '/dashboard/scheduling', ...adminOnlyRoutes];
   
   if (user?.role === 'student' && restrictedForStudents.some(route => location.pathname.startsWith(route))) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (user?.role === 'faculty' && adminOnlyRoutes.some(route => location.pathname.startsWith(route))) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Layout />;

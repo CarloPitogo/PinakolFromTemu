@@ -298,7 +298,7 @@ export function Students() {
                 </div>
 
                 {/* Actions */}
-                <Link to={`/students/${student.id}`}>
+                <Link to={`/dashboard/students/${student.id}`}>
                   <Button variant="outline" size="sm">
                     <Eye className="w-4 h-4 mr-2" />
                     View Profile

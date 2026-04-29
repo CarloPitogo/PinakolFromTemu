@@ -596,7 +596,7 @@ function ResultCard({ student, searchSkills, searchSports }: { student: Student,
           
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <Link to={`/students/${student.id}`} className="block">
+              <Link to={`/dashboard/students/${student.id}`} className="block">
                 <h4 className="text-lg font-black text-gray-900 group-hover:text-[#FF7F11] transition-colors leading-tight">
                   {student.firstName} {student.lastName}
                 </h4>
@@ -670,7 +670,7 @@ function ResultCard({ student, searchSkills, searchSports }: { student: Student,
           </div>
         </div>
 
-        <Link to={`/students/${student.id}`} className="hidden md:block">
+        <Link to={`/dashboard/students/${student.id}`} className="hidden md:block">
           <Button variant="outline" className="rounded-xl border-gray-100 font-bold text-xs hover:border-[#FF7F11] hover:text-[#FF7F11] hover:bg-orange-50 transition-all">
             Profile Details
           </Button>
